@@ -1,9 +1,9 @@
 # Agendou
 
-Sistema para agendamento de serviços, com foco em pequenos comercios.
+Sistema para agendamento de serviços, com foco em pequenos comércios.
 feito para agilizar o contato entre clientes e prestadores de serviço
 
-Rapido e prático.
+Rápido e prático.
 
 ## Stack
 
