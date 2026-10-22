@@ -1,4 +1,4 @@
-# LOTOU - Contexto de Domínio do Negócio
+# Agendou - Contexto de Domínio do Negócio
 
 ## Propósito do MVP
 Plataforma web mobile-first para digitalização de serviços locais, conectando clientes a comércios de proximidade com agendamento de horários sem fricção[cite: 1, 2].

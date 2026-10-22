@@ -1,11 +1,11 @@
 ### [TASK-02]: UI Base, Layout Shell Mobile-First & Tela Inicial (Landing)
 
 **1. Objetivo:**
-Implementar o invólucro visual principal (Layout Shell) garantindo comportamento mobile-first no desktop, configurar os componentes de base do shadcn/ui e construir a tela inicial (`/`) de apresentação do LOTOU com pontos de entrada claros para clientes e comerciantes.
+Implementar o invólucro visual principal (Layout Shell) garantindo comportamento mobile-first no desktop, configurar os componentes de base do shadcn/ui e construir a tela inicial (`/`) de apresentação do Agendou com pontos de entrada claros para clientes e comerciantes.
 
 **2. Arquivos Envolvidos:**
 - Criar: `src/components/layout/mobile-shell.tsx` (container com largura máxima e padding responsivo)
-- Criar: `src/components/layout/header.tsx` (topo com logotipo LOTOU e ações rápidas)
+- Criar: `src/components/layout/header.tsx` (topo com logotipo Agendou e ações rápidas)
 - Criar: `src/components/layout/bottom-nav.tsx` (navegação inferior para mobile)
 - Criar: `src/components/landing/hero-section.tsx`
 - Criar: `src/components/landing/category-pills.tsx`
@@ -19,7 +19,7 @@ Implementar o invólucro visual principal (Layout Shell) garantindo comportament
   - Em desktop: centralizar a interface com largura máxima controlada (`max-w-md` ou `max-w-lg`) com fundo neutro sutil nas laterais, simulando a usabilidade de um app.
   
 - **Componentes da Tela Inicial (`/`):**
-  - **Header:** Logotipo LOTOU em destaque e botão de Login.
+  - **Header:** Logotipo Agendou em destaque e botão de Login.
   - **Hero:** Frase de impacto sobre valor local (ex: *"Tudo o que você precisa no seu bairro, com horário marcado"*).
   - **Barra de Pesquisa Rápida (Mock):** Campo de busca visual que redireciona o usuário para `/explorar` com botão de filtro por proximidade.
   - **Grid de Categorias:** Atalhos com ícones (Barbearia, Estética, Lanches, Manutenção/Serviços).

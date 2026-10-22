@@ -1,4 +1,4 @@
-# LOTOU - Diretrizes de Engenharia e Padrões de Código
+# Agendou - Diretrizes de Engenharia e Padrões de Código
 
 ## 1. Stack Tecnológica
 - Framework: Next.js 16+ (App Router), TypeScript em modo strict.
