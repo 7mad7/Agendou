@@ -35,18 +35,20 @@ model ClientProfile {
 }
 
 model MerchantProfile {
-  id        String    @id @default(cuid())
-  userId    String    @unique
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tradeName String
-  cnpj      String    @unique
-  category  String
-  address   String
-  latitude  Float?
-  longitude Float?
-  services  Service[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tradeName   String
+  cnpj        String    @unique
+  phone       String?
+  category    String
+  description String?
+  address     String
+  latitude    Float?
+  longitude   Float?
+  services    Service[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([category])
   @@index([latitude, longitude])
@@ -57,8 +59,10 @@ model Service {
   merchantId      String
   merchant        MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   title           String
+  description     String?
   price           Decimal         @db.Decimal(10, 2)
   durationMinutes Int
+  active          Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
