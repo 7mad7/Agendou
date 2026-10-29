@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:test:start": "bash scripts/test-db.sh start",
+    "db:test:stop": "bash scripts/test-db.sh stop",
+    "db:test:status": "bash scripts/test-db.sh status",
+    "db:test:push": "npx prisma db push",
+    "db:test:seed": "node --env-file=.env prisma/seed.mjs",
+    "db:test:reset": "bash scripts/test-db.sh reset"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
