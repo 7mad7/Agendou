@@ -111,6 +111,7 @@ model Booking {
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
+  @@unique([merchantId, startTime])
   @@index([merchantId, startTime, endTime])
   @@index([clientId])
 }
