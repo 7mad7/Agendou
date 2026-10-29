@@ -60,6 +60,7 @@ model MerchantProfile {
   updatedAt      DateTime               @updatedAt
 
   @@index([category])
+  @@index([tradeName])
   @@index([latitude, longitude])
 }
 
