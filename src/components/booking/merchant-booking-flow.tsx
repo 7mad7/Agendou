@@ -34,7 +34,10 @@ export function MerchantBookingFlow({
   isAuthenticated,
 }: MerchantBookingFlowProps) {
   const router = useRouter();
-  const days = React.useMemo(() => generateNext14Days(), []);
+  const days = React.useMemo(
+    () => generateNext14Days(initialDate),
+    [initialDate]
+  );
 
   const [selectedService, setSelectedService] =
     React.useState<PublicServiceDTO | null>(merchant.services[0] ?? null);

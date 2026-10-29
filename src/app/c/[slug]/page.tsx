@@ -1,3 +1,4 @@
+import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, Store } from "lucide-react";
 import {
@@ -17,10 +18,12 @@ import {
 import { getSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
+type MerchantParams = Promise<{
+  slug: string;
+}>;
+
 interface MerchantPublicPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: MerchantParams;
 }
 
 function getTodayIsoDate(): string {
@@ -31,9 +34,17 @@ function getTodayIsoDate(): string {
   return `${year}-${month}-${day}`;
 }
 
-export default async function MerchantPublicPage({
-  params,
-}: MerchantPublicPageProps) {
+function MerchantPublicSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="h-36 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-48 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
+    </div>
+  );
+}
+
+async function MerchantPublicContent({ params }: { params: MerchantParams }) {
   const { slug } = await params;
   const [merchant, session] = await Promise.all([
     getMerchantPublicDetailsAction(slug),
@@ -84,17 +95,7 @@ export default async function MerchantPublicPage({
     : { data: [] };
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <Link
-          href="/explorar"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>Voltar para a busca</span>
-        </Link>
-      </div>
-
+    <>
       {/* Cabeçalho com dados do estabelecimento */}
       <Card className="border-border bg-card shadow-2xs">
         <CardHeader className="space-y-2 pb-3">
@@ -138,7 +139,28 @@ export default async function MerchantPublicPage({
         initialDate={initialDate}
         isAuthenticated={Boolean(session)}
       />
-    </div>
+    </>
   );
 }
 
+export default function MerchantPublicPage({
+  params,
+}: MerchantPublicPageProps) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <Link
+          href="/explorar"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Voltar para a busca</span>
+        </Link>
+      </div>
+
+      <React.Suspense fallback={<MerchantPublicSkeleton />}>
+        <MerchantPublicContent params={params} />
+      </React.Suspense>
+    </div>
+  );
+}

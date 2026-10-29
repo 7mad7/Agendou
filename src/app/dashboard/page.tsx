@@ -1,3 +1,4 @@
+import * as React from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -20,7 +21,20 @@ import {
 import { formatCurrencyBRL, formatDurationMinutes } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 
-export default async function DashboardOverviewPage() {
+function DashboardOverviewSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-24 animate-pulse rounded-2xl bg-muted" />
+        <div className="h-24 animate-pulse rounded-2xl bg-muted" />
+      </div>
+      <div className="h-32 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-40 w-full animate-pulse rounded-2xl bg-muted" />
+    </div>
+  );
+}
+
+async function DashboardOverviewContent() {
   const [profileResult, servicesResult] = await Promise.all([
     getAuthenticatedMerchantProfile(),
     getMerchantServicesAction(),
@@ -176,3 +190,10 @@ export default async function DashboardOverviewPage() {
   );
 }
 
+export default function DashboardOverviewPage() {
+  return (
+    <React.Suspense fallback={<DashboardOverviewSkeleton />}>
+      <DashboardOverviewContent />
+    </React.Suspense>
+  );
+}

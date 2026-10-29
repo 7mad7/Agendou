@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { clearSessionCookie, setSessionCookie } from "@/lib/session";
 import {
@@ -101,6 +102,8 @@ export async function registerClientAction(
       name,
     });
 
+    revalidatePath("/", "layout");
+
     return {
       success: true,
       message: "Conta de cliente criada com sucesso!",
@@ -192,6 +195,8 @@ export async function registerMerchantAction(
       name: tradeName,
     });
 
+    revalidatePath("/", "layout");
+
     return {
       success: true,
       message: "Comércio cadastrado com sucesso!",
@@ -249,6 +254,8 @@ export async function loginAction(
       name: displayName,
     });
 
+    revalidatePath("/", "layout");
+
     const isSafeCallback =
       callbackUrl &&
       callbackUrl.startsWith("/") &&
@@ -304,6 +311,7 @@ export async function forgotPasswordAction(
 
 export async function logoutAction(): Promise<AuthActionResult> {
   await clearSessionCookie();
+  revalidatePath("/", "layout");
   return {
     success: true,
     redirectTo: "/login",

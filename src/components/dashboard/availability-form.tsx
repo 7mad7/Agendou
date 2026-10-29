@@ -68,19 +68,12 @@ export function AvailabilityForm({ initialDays }: AvailabilityFormProps) {
   const sampleActiveDay =
     daysList.find((d) => d.isActive) ?? daysList[0];
 
-  const sampleFutureDate = React.useMemo(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return tomorrow;
-  }, []);
-
   const previewSlots = React.useMemo(() => {
     if (!sampleActiveDay || !sampleActiveDay.isActive) {
       return [];
     }
     return computeAvailableSlots({
-      date: sampleFutureDate,
+      date: "2099-01-05",
       availability: {
         isActive: sampleActiveDay.isActive,
         openTime: sampleActiveDay.openTime,
@@ -92,9 +85,9 @@ export function AvailabilityForm({ initialDays }: AvailabilityFormProps) {
       },
       serviceDurationMinutes: previewDuration,
       occupiedIntervals: [],
-      now: new Date(sampleFutureDate.getTime() - 86400000),
+      now: new Date(2099, 0, 1, 0, 0, 0),
     });
-  }, [sampleActiveDay, previewDuration, sampleFutureDate]);
+  }, [sampleActiveDay, previewDuration]);
 
   async function onSubmit(values: WeeklyAvailabilityFormValues) {
     setServerError(null);

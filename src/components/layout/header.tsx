@@ -1,7 +1,67 @@
+import * as React from "react";
 import Link from "next/link";
-import { CalendarCheck, LogIn } from "lucide-react";
+import { CalendarCheck, LayoutDashboard, LogIn, UserCheck } from "lucide-react";
+import { LogoutButton } from "@/components/layout/logout-button";
 import { buttonVariants } from "@/components/ui/button";
+import { getSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
+
+function HeaderGuestFallback() {
+  return (
+    <Link
+      href="/login"
+      className={cn(
+        buttonVariants({ variant: "outline", size: "sm" }),
+        "gap-1.5 rounded-xl font-semibold"
+      )}
+    >
+      <LogIn className="h-4 w-4 text-primary" aria-hidden="true" />
+      <span>Entrar</span>
+    </Link>
+  );
+}
+
+async function HeaderSessionActions() {
+  const session = await getSession();
+
+  if (!session) {
+    return <HeaderGuestFallback />;
+  }
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {session.role === "MERCHANT" ? (
+        <Link
+          href="/dashboard"
+          className={cn(
+            buttonVariants({ variant: "secondary", size: "sm" }),
+            "h-8 gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+          )}
+        >
+          <LayoutDashboard
+            className="h-3.5 w-3.5 text-primary"
+            aria-hidden="true"
+          />
+          <span className="max-w-[90px] truncate">Painel</span>
+        </Link>
+      ) : (
+        <Link
+          href="/explorar"
+          className={cn(
+            buttonVariants({ variant: "secondary", size: "sm" }),
+            "h-8 gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+          )}
+        >
+          <UserCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+          <span className="max-w-[90px] truncate">
+            {session.name.split(" ")[0]}
+          </span>
+        </Link>
+      )}
+      <LogoutButton />
+    </div>
+  );
+}
 
 export function Header() {
   return (
@@ -24,18 +84,10 @@ export function Header() {
       </Link>
 
       <nav aria-label="Ações rápidas">
-        <Link
-          href="/login"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "gap-1.5 rounded-xl font-semibold"
-          )}
-        >
-          <LogIn className="h-4 w-4 text-primary" aria-hidden="true" />
-          <span>Entrar</span>
-        </Link>
+        <React.Suspense fallback={<HeaderGuestFallback />}>
+          <HeaderSessionActions />
+        </React.Suspense>
       </nav>
     </header>
   );
 }
-

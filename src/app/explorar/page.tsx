@@ -16,19 +16,35 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+type ExplorarSearchParams = Promise<{
+  q?: string;
+  category?: string;
+  order?: string;
+  lat?: string;
+  lng?: string;
+}>;
+
 interface ExplorarPageProps {
-  searchParams: Promise<{
-    q?: string;
-    category?: string;
-    order?: string;
-    lat?: string;
-    lng?: string;
-  }>;
+  searchParams: ExplorarSearchParams;
 }
 
-export default async function ExplorarPage({
+function ExplorarSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-10 w-full animate-pulse rounded-full bg-muted" />
+      <div className="h-44 w-full animate-pulse rounded-3xl bg-muted" />
+      <div className="h-36 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-36 w-full animate-pulse rounded-2xl bg-muted" />
+    </div>
+  );
+}
+
+async function ExplorarDynamicContent({
   searchParams,
-}: ExplorarPageProps) {
+}: {
+  searchParams: ExplorarSearchParams;
+}) {
   const resolvedParams = await searchParams;
   const query = resolvedParams.q ?? "";
   const category = resolvedParams.category ?? "";
@@ -51,36 +67,14 @@ export default async function ExplorarPage({
     discoveryResult;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="space-y-1">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
-          Explorar Comércios Locais
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Encontre estabelecimentos próximos, filtre por categoria e agende seu
-          horário sem fila.
-        </p>
-      </div>
+    <>
+      <SearchBar
+        initialQuery={query}
+        currentOrder={order}
+        hasClientCoordinates={hasClientCoordinates}
+      />
 
-      <React.Suspense
-        fallback={
-          <div className="h-24 w-full animate-pulse rounded-2xl bg-muted" />
-        }
-      >
-        <SearchBar
-          initialQuery={query}
-          currentOrder={order}
-          hasClientCoordinates={hasClientCoordinates}
-        />
-      </React.Suspense>
-
-      <React.Suspense
-        fallback={
-          <div className="h-10 w-full animate-pulse rounded-full bg-muted" />
-        }
-      >
-        <CategoryFilter selectedCategory={category} />
-      </React.Suspense>
+      <CategoryFilter selectedCategory={category} />
 
       <MapPlaceholder
         merchants={merchants}
@@ -159,7 +153,26 @@ export default async function ExplorarPage({
           </div>
         )}
       </section>
-    </div>
+    </>
   );
 }
 
+export default function ExplorarPage({ searchParams }: ExplorarPageProps) {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold tracking-tight text-foreground">
+          Explorar Comércios Locais
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Encontre estabelecimentos próximos, filtre por categoria e agende seu
+          horário sem fila.
+        </p>
+      </div>
+
+      <React.Suspense fallback={<ExplorarSkeleton />}>
+        <ExplorarDynamicContent searchParams={searchParams} />
+      </React.Suspense>
+    </div>
+  );
+}

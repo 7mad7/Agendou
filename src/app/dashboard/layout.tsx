@@ -44,7 +44,16 @@ const dashboardLinks = [
   },
 ];
 
-export default async function DashboardLayout({
+function DashboardShellSkeleton() {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="h-28 w-full animate-pulse rounded-2xl bg-muted" />
+      <div className="h-64 w-full animate-pulse rounded-2xl bg-muted" />
+    </div>
+  );
+}
+
+async function DashboardAuthenticatedShell({
   children,
 }: {
   children: React.ReactNode;
@@ -61,7 +70,6 @@ export default async function DashboardLayout({
 
   const merchantResult = await getAuthenticatedMerchantProfile();
 
-  // Bloqueio explícito para usuários que não possuem perfil de comércio registrado
   if (merchantResult.unauthorized || !merchantResult.data) {
     return (
       <div className="flex flex-col gap-4 py-4">
@@ -149,3 +157,14 @@ export default async function DashboardLayout({
   );
 }
 
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <React.Suspense fallback={<DashboardShellSkeleton />}>
+      <DashboardAuthenticatedShell>{children}</DashboardAuthenticatedShell>
+    </React.Suspense>
+  );
+}

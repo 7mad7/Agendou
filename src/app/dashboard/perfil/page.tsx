@@ -1,14 +1,19 @@
+import * as React from "react";
 import { redirect } from "next/navigation";
 import { getAuthenticatedMerchantProfile } from "@/actions/merchant";
 import { ProfileForm } from "@/components/dashboard/profile-form";
 
-export default async function MerchantProfilePage() {
+async function MerchantProfileContent() {
   const result = await getAuthenticatedMerchantProfile();
 
   if (result.unauthorized || !result.data) {
     redirect("/login?callbackUrl=/dashboard/perfil");
   }
 
+  return <ProfileForm initialProfile={result.data} />;
+}
+
+export default function MerchantProfilePage() {
   return (
     <section aria-labelledby="merchant-profile-heading" className="space-y-4">
       <div>
@@ -24,8 +29,13 @@ export default async function MerchantProfilePage() {
         </p>
       </div>
 
-      <ProfileForm initialProfile={result.data} />
+      <React.Suspense
+        fallback={
+          <div className="h-96 w-full animate-pulse rounded-2xl bg-muted" />
+        }
+      >
+        <MerchantProfileContent />
+      </React.Suspense>
     </section>
   );
 }
-

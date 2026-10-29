@@ -29,9 +29,12 @@ export function MobileShell({
         >
           {children}
         </main>
-        {showBottomNav && <BottomNav />}
+        {showBottomNav && (
+          <React.Suspense fallback={null}>
+            <BottomNav />
+          </React.Suspense>
+        )}
       </div>
     </div>
   );
 }
-

@@ -1,9 +1,10 @@
+import * as React from "react";
 import { redirect } from "next/navigation";
 import { getMerchantAvailabilityAction } from "@/actions/availability";
 import { AvailabilityForm } from "@/components/dashboard/availability-form";
 import { getDefaultWeeklyAvailability } from "@/lib/validations/availability";
 
-export default async function MerchantAvailabilityConfigPage() {
+async function MerchantAvailabilityContent() {
   const result = await getMerchantAvailabilityAction();
 
   if (result.unauthorized) {
@@ -12,6 +13,10 @@ export default async function MerchantAvailabilityConfigPage() {
 
   const initialDays = result.data ?? getDefaultWeeklyAvailability();
 
+  return <AvailabilityForm initialDays={initialDays} />;
+}
+
+export default function MerchantAvailabilityConfigPage() {
   return (
     <section
       aria-labelledby="availability-config-heading"
@@ -30,8 +35,13 @@ export default async function MerchantAvailabilityConfigPage() {
         </p>
       </div>
 
-      <AvailabilityForm initialDays={initialDays} />
+      <React.Suspense
+        fallback={
+          <div className="h-96 w-full animate-pulse rounded-2xl bg-muted" />
+        }
+      >
+        <MerchantAvailabilityContent />
+      </React.Suspense>
     </section>
   );
 }
-

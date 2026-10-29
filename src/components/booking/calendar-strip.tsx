@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +27,10 @@ const MONTH_NAMES_SHORT = [
   "Dez",
 ];
 
-export function generateNext14Days(): CalendarDayOption[] {
+export function generateNext14Days(baseIsoDate: string): CalendarDayOption[] {
   const days: CalendarDayOption[] = [];
-  const base = new Date();
-  base.setHours(0, 0, 0, 0);
+  const [baseYear, baseMonth, baseDay] = baseIsoDate.split("-").map(Number);
+  const base = new Date(baseYear, baseMonth - 1, baseDay, 0, 0, 0, 0);
 
   for (let offset = 0; offset < 14; offset++) {
     const d = new Date(base);
@@ -129,4 +128,3 @@ export function CalendarStrip({
     </section>
   );
 }
-
