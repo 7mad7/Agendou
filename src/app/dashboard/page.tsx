@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, MapPin, Phone, Scissors, Store } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarClock,
+  MapPin,
+  Phone,
+  Scissors,
+  Store,
+} from "lucide-react";
 import { getAuthenticatedMerchantProfile } from "@/actions/merchant";
 import { getMerchantServicesAction } from "@/actions/services";
 import { buttonVariants } from "@/components/ui/button";
@@ -48,20 +55,19 @@ export default async function DashboardOverviewPage() {
         <Card className="border-border">
           <CardHeader className="p-4 pb-2">
             <CardDescription className="text-xs">
-              Geolocalização
+              Agenda Semanal
             </CardDescription>
             <CardTitle className="text-sm font-bold text-foreground">
-              {merchant?.latitude !== null && merchant?.longitude !== null
-                ? "Configurada"
-                : "Pendente"}
+              Horários & Pausas
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <Link
-              href="/dashboard/perfil"
+              href="/dashboard/agenda/configuracao"
               className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
             >
-              <span>Editar localização</span>
+              <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Configurar grade</span>
               <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </Link>
           </CardContent>

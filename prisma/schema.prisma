@@ -12,6 +12,12 @@ enum Role {
   MERCHANT
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+}
+
 model User {
   id              String           @id @default(cuid())
   email           String           @unique
@@ -24,31 +30,34 @@ model User {
 }
 
 model ClientProfile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
   age       Int
   gender    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model MerchantProfile {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tradeName   String
-  cnpj        String    @unique
-  phone       String?
-  category    String
-  description String?
-  address     String
-  latitude    Float?
-  longitude   Float?
-  services    Service[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String                 @id @default(cuid())
+  userId         String                 @unique
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tradeName      String
+  cnpj           String                 @unique
+  phone          String?
+  category       String
+  description    String?
+  address        String
+  latitude       Float?
+  longitude      Float?
+  services       Service[]
+  availabilities MerchantAvailability[]
+  bookings       Booking[]
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
 
   @@index([category])
   @@index([latitude, longitude])
@@ -63,9 +72,44 @@ model Service {
   price           Decimal         @db.Decimal(10, 2)
   durationMinutes Int
   active          Boolean         @default(true)
+  bookings        Booking[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([merchantId])
 }
 
+model MerchantAvailability {
+  id         String          @id @default(cuid())
+  merchantId String
+  merchant   MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  dayOfWeek  Int
+  isActive   Boolean         @default(true)
+  openTime   String
+  closeTime  String
+  breakStart String?
+  breakEnd   String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([merchantId, dayOfWeek])
+  @@index([merchantId])
+}
+
+model Booking {
+  id         String          @id @default(cuid())
+  clientId   String
+  client     ClientProfile   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  merchantId String
+  merchant   MerchantProfile @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  serviceId  String
+  service    Service         @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  startTime  DateTime
+  endTime    DateTime
+  status     BookingStatus   @default(CONFIRMED)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([merchantId, startTime, endTime])
+  @@index([clientId])
+}

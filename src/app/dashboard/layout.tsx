@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  CalendarClock,
   LayoutDashboard,
   Scissors,
   ShieldAlert,
@@ -30,6 +31,11 @@ const dashboardLinks = [
     href: "/dashboard/servicos",
     label: "Serviços",
     icon: Scissors,
+  },
+  {
+    href: "/dashboard/agenda/configuracao",
+    label: "Agenda",
+    icon: CalendarClock,
   },
   {
     href: "/dashboard/perfil",
@@ -120,7 +126,7 @@ export default async function DashboardLayout({
 
         <nav
           aria-label="Navegação do Painel do Comércio"
-          className="mt-3.5 grid grid-cols-3 gap-1.5 rounded-xl bg-secondary p-1"
+          className="mt-3.5 grid grid-cols-4 gap-1.5 rounded-xl bg-secondary p-1"
         >
           {dashboardLinks.map((item) => {
             const Icon = item.icon;
