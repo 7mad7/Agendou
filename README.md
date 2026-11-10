@@ -1,29 +1,26 @@
 # Agendou
 
-  
+Sistema para agendamento de serviços. Foco em comercios de pequeno porte e que necessitam de controle sobre horarios, datas e agendas. Com foco inicial em aparelhos mobile.
 
-Sistema para agendamento de serviços. Foco em comercios de pequeno porte e que necessitam de controle sobre horarios, datas e agendas.    
-
-  
+---
 
 ## Stack
 
-  
+**Next.js:**
+- App Router
+- Server Actions
 
-- Next.js
+**PostgreSQL**
 
-- PostgreSQL
+**TypeScript**
 
-- Typescript
+**Prisma**
 
-- Prisma
+**Tailwind CSS**
 
-  
-  
+---
 
 ## Alcance
 
-  
-
-Plataformas mobile e navegadores em desktop, futuramente implementação multiplataforma nativa.
+Plataformas mobile, futuramente implementação multiplataforma nativa.
 
