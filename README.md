@@ -36,11 +36,25 @@
 O projeto conta com scripts automatizados em `scripts/` que instalam as dependências, sobem um banco PostgreSQL isolado para testes locais, aplicam o schema e populam dados iniciais:
 
 ```bash
-# 1. Instala dependências, sobe o PostgreSQL local e popula os dados de teste
+
+# 1. Instale o nvm.
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.41.0/install.sh | bash
+
+# 2. Baixa e instala o Node.js.
+nvm install 26
+
+# 3. Verifica a versão do Node.js.
+node -v # Should print "v26.13.1".
+
+# 4. Verifica a versão do npm.
+npm -v # deve ter como saida a versão atual do npm.
+
+# 5. Instala dependências, sobe o PostgreSQL local e popula os dados de teste
 npm run setup:local
 
-# 2. Inicia o servidor de desenvolvimento
+# 6. Inicia o servidor de desenvolvimento
 npm run dev
+
 ```
 
 Acesse **[http://localhost:3000](http://localhost:3000)** no navegador.
