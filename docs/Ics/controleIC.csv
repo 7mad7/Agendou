@@ -1,6 +1,7 @@
 ID,Item,Tipo,Caminho,Versão,Situação,Linha de base,Responsável,Última alteração,Observação
-IC-DOC-01,Plano de Projeto,Documento,docs/Planejamento/PlanoDeProjeto_Agendou.docx (+ .pdf),1.0,Aprovado,—,Yuri Galvão Machado,17/11/2026,
-IC-DOC-02,Planilha de controle de ICs,Documento,docs/Ics/controleIC.csv,1.0,Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-01,Plano de Projeto,Documento,docs/Planejamento/PlanoDeProjeto_Agendou.docx (+ .pdf),1.1,Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-02,Planilha de controle de ICs,Documento,docs/Ics/controleIC.csv,1.1,Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-03,Documento de Requisitos,Documento,docs/Requisitos/DocumentoRequisitos_Agendou.docx (+ .pdf),1.0,Aprovado,—,Mateus Cunha Rodrigues,17/11/2026,
 IC-DOC-13,README do repositório,Documento,README.md,Git (commit),Aprovado,—,Yuri Galvão Machado,17/11/2026,
 IC-DOC-14,Especificações das tarefas do MVP (TASK-01 a 07),Documento,.agents/,Git (commit),Aprovado,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
 IC-SRC-01,"Telas, componentes e arquivos públicos",Código-fonte,"src/app (exceto api), src/components, public/",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
