@@ -1,0 +1,54 @@
+// Diagrama de pacotes do Agendou (organização do repositório e dependências)
+digraph Pacotes {
+  rankdir=TB;
+  graph [fontname="Arial", fontsize=12, nodesep=0.35, ranksep=0.55, pad=0.3, compound=true, bgcolor="white"];
+  node  [fontname="Arial", fontsize=10.5, shape=tab, style=filled, fillcolor="#F4F7FB", color="#2F5597"];
+  edge  [fontname="Arial", fontsize=9, style=dashed, arrowhead=vee, color="#444444"];
+
+  subgraph cluster_src {
+    label="src"; style=rounded; color="#333333"; fontsize=12;
+    paginas    [label="app (páginas)\n/, /explorar, /c/[slug],\n/login, /register, /dashboard"];
+    api        [label="app/api\nRotas REST (Route Handlers)"];
+    components [label="components\nlayout, landing, auth,\ndiscovery, booking, dashboard, ui"];
+    actions    [label="actions\nauth, merchant, services,\navailability, discovery, booking"];
+    subgraph cluster_lib {
+      label="lib"; style=rounded; color="#777777"; fontsize=11;
+      engine  [label="availability-engine"];
+      valid   [label="validations (Zod)"];
+      session [label="session"];
+      apiutil [label="api (http)"];
+      prisma  [label="prisma (cliente)"];
+    }
+    middleware [label="middleware\nproteção de /dashboard"];
+  }
+
+  subgraph cluster_db {
+    label="db"; style=rounded; color="#333333"; fontsize=12;
+    schema [label="schema.prisma"];
+    migr   [label="migrations"];
+    seed   [label="seed.mjs"];
+  }
+
+  tests  [label="tests\nunit, integration, e2e"];
+  docsapi [label="docs/api\nopenapi.yaml,\npostman_collection.json"];
+  ci     [label=".github/workflows\nci.yml"];
+
+  paginas -> components;
+  paginas -> actions;
+  components -> actions;
+  api -> actions;
+  api -> apiutil;
+  actions -> engine;
+  actions -> valid;
+  actions -> session;
+  actions -> prisma;
+  engine -> prisma;
+  middleware -> session;
+  prisma -> schema [label="gerado de"];
+  migr -> schema [label="aplica"];
+  tests -> engine;
+  tests -> valid;
+  docsapi -> api [label="descreve e testa"];
+  ci -> tests [label="executa"];
+  ci -> docsapi [label="Newman"];
+}

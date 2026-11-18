@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Protótipos de tela do Agendou</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #fff; font-family: Arial, "Liberation Sans", sans-serif; color: #1f2937; }
+  .folha { display: flex; gap: 46px; padding: 26px 30px 30px; width: 1000px; }
+  .tela { width: 440px; }
+  .rotulo { font-size: 17px; font-weight: bold; margin: 0 0 4px 4px; color: #1d2b44; }
+  .rota { font-size: 13px; color: #666; margin: 0 0 10px 4px; font-family: "DejaVu Sans Mono", monospace; }
+  .celular { width: 440px; height: 860px; border: 10px solid #222; border-radius: 42px; overflow: hidden; position: relative; background: #fafafa; }
+  .topo { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+  .logo { font-weight: bold; font-size: 20px; color: #2F5597; }
+  .btn-mini { font-size: 12px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 10px; }
+  .conteudo { padding: 14px 16px 90px; }
+  h2 { font-size: 17px; margin: 14px 0 8px; }
+  .busca { border: 1px solid #cbd5e1; border-radius: 12px; padding: 11px 12px; font-size: 13px; color: #94a3b8; background: #fff; }
+  .pilulas { display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+  .pilula { font-size: 12px; padding: 6px 10px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; }
+  .pilula.ativa { background: #2F5597; color: #fff; border-color: #2F5597; }
+  .alternar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 10px; }
+  .alternar div { text-align: center; font-size: 12px; padding: 8px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; }
+  .alternar .ativa { background: #E8EEF8; border-color: #2F5597; font-weight: bold; }
+  .mapa { height: 110px; border-radius: 14px; border: 1px dashed #94a3b8; background: repeating-linear-gradient(45deg, #eef2f7, #eef2f7 10px, #f7f9fc 10px, #f7f9fc 20px); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #64748b; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; margin-bottom: 9px; }
+  .card b { font-size: 14px; }
+  .linha { display: flex; justify-content: space-between; align-items: center; }
+  .meta { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .tag { font-size: 11px; background: #E8EEF8; color: #2F5597; border-radius: 6px; padding: 2px 7px; }
+  .preco { font-weight: bold; color: #2F5597; font-size: 14px; }
+  .btn { font-size: 12px; border-radius: 8px; padding: 6px 10px; border: 1px solid #2F5597; color: #2F5597; background: #fff; }
+  .btn.cheio { background: #2F5597; color: #fff; }
+  .card.sel { border: 2px solid #2F5597; background: #f5f8fd; }
+  .datas { display: flex; gap: 6px; overflow: hidden; }
+  .data { min-width: 58px; text-align: center; border: 1px solid #e5e7eb; border-radius: 14px; padding: 7px 0; background: #fff; font-size: 11px; color: #64748b; }
+  .data b { display: block; font-size: 18px; color: #1f2937; }
+  .data.sel { background: #2F5597; color: #dbe5f5; border-color: #2F5597; }
+  .data.sel b { color: #fff; }
+  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .slot { text-align: center; border: 1px solid #e5e7eb; border-radius: 10px; padding: 9px 0; font-family: "DejaVu Sans Mono", monospace; font-size: 13px; background: #fff; }
+  .slot.sel { background: #2F5597; color: #fff; border-color: #2F5597; }
+  .principal { position: absolute; left: 16px; right: 16px; bottom: 74px; background: #2F5597; color: #fff; text-align: center; padding: 13px; border-radius: 12px; font-weight: bold; font-size: 14px; }
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; height: 62px; background: #fff; border-top: 1px solid #e5e7eb; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; font-size: 11px; color: #64748b; padding-top: 10px; }
+  .nav .ativo { color: #2F5597; font-weight: bold; }
+  .nav i { display: block; width: 20px; height: 20px; border-radius: 6px; border: 2px solid currentColor; margin: 0 auto 4px; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 12px; }
+  .kpi small { font-size: 11px; color: #64748b; display: block; }
+  .kpi strong { font-size: 24px; color: #2F5597; }
+  .kpi a { font-size: 11px; color: #2F5597; display: block; margin-top: 4px; }
+  .dia { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 10px 12px; margin-bottom: 7px; }
+  .chave { width: 38px; height: 22px; border-radius: 999px; background: #2F5597; position: relative; }
+  .chave::after { content: ""; position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .chave.off { background: #cbd5e1; }
+  .chave.off::after { right: auto; left: 3px; }
+  .horas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 7px; font-size: 11px; color: #64748b; }
+  .horas div span { display: block; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 8px; color: #1f2937; font-size: 13px; margin-top: 2px; font-family: "DejaVu Sans Mono", monospace; }
+  .pausa { font-size: 11px; color: #64748b; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="folha" id="cliente">
+  <div class="tela">
+    <p class="rotulo">P1. Buscar comércios (UC07)</p>
+    <p class="rota">/explorar</p>
+    <div class="celular">
+      <div class="topo"><span class="logo">Agendou</span><span class="btn-mini">Entrar</span></div>
+      <div class="conteudo">
+        <h2 style="margin-top:2px">Explorar comércios</h2>
+        <div class="busca">Buscar comércio pelo nome...</div>
+        <div class="pilulas"><span class="pilula ativa">Todos</span><span class="pilula">Barbearia</span><span class="pilula">Estética</span><span class="pilula">Lanches</span><span class="pilula">Manutenção</span></div>
+        <div class="alternar"><div class="ativa">Mais Próximos</div><div>Melhores Avaliados</div></div>
+        <div class="mapa">Área do mapa (marcador visual)</div>
+        <h2>Mais próximos de você</h2>
+        <div class="card"><div class="linha"><b>Barbearia Vintage do Bairro</b><span class="tag">0,4 km</span></div><div class="meta">Barbearia · Rua das Acácias, 210 - Centro</div><div class="linha" style="margin-top:6px"><span class="meta">3 serviços · a partir de</span><span class="preco">R$ 35,00</span></div></div>
+        <div class="card"><div class="linha"><b>Studio Bela Estética &amp; Unhas</b><span class="tag">1,2 km</span></div><div class="meta">Estética &amp; Beleza · Av. Brasil, 845 - Sala 2</div><div class="linha" style="margin-top:6px"><span class="meta">2 serviços · a partir de</span><span class="preco">R$ 40,00</span></div></div>
+      </div>
+      <div class="nav"><div><i></i>Início</div><div class="ativo"><i></i>Explorar</div><div><i></i>Perfil / Login</div></div>
+    </div>
+  </div>
+
+  <div class="tela">
+    <p class="rotulo">P2. Agendar serviço (UC08 e UC09)</p>
+    <p class="rota">/c/[id do comércio]</p>
+    <div class="celular">
+      <div class="topo"><span class="logo">Agendou</span><span class="btn-mini">Cliente</span></div>
+      <div class="conteudo">
+        <div class="card" style="margin-top:2px"><b style="font-size:16px">Barbearia Vintage do Bairro</b><div class="meta">Barbearia · Rua das Acácias, 210 - Centro</div></div>
+        <h2>1. Escolha o serviço</h2>
+        <div class="card sel"><div class="linha"><b>Corte Degradê / Social</b><span class="preco">R$ 40,00</span></div><div class="linha"><span class="meta">30 min</span><span class="btn cheio">Selecionado</span></div></div>
+        <div class="card"><div class="linha"><b>Combo Corte + Barba</b><span class="preco">R$ 65,00</span></div><div class="linha"><span class="meta">1h (60 min)</span><span class="btn">Agendar</span></div></div>
+        <h2>2. Selecione a Data</h2>
+        <div class="datas"><div class="data">Hoje<b>17</b>nov</div><div class="data sel">Qua<b>18</b>nov</div><div class="data">Qui<b>19</b>nov</div><div class="data">Sex<b>20</b>nov</div><div class="data">Sáb<b>21</b>nov</div><div class="data">Dom<b>22</b>nov</div></div>
+        <h2>3. Horários Disponíveis</h2>
+        <div class="slots"><div class="slot">09:00</div><div class="slot sel">09:30</div><div class="slot">10:00</div><div class="slot">10:30</div><div class="slot">11:00</div><div class="slot">11:30</div><div class="slot">13:00</div><div class="slot">13:30</div></div>
+      </div>
+      <div class="principal">Continuar</div>
+      <div class="nav"><div><i></i>Início</div><div class="ativo"><i></i>Explorar</div><div><i></i>Perfil / Login</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="folha" id="comerciante">
+  <div class="tela">
+    <p class="rotulo">P3. Painel do comércio (UC04 e UC05)</p>
+    <p class="rota">/dashboard</p>
+    <div class="celular">
+      <div class="topo"><span class="logo">Agendou</span><span class="btn-mini">Sair</span></div>
+      <div class="conteudo">
+        <h2 style="margin-top:2px">Painel do comércio</h2>
+        <div class="kpis">
+          <div class="kpi"><small>Serviços Ativos</small><strong>3</strong><a>Gerenciar catálogo</a></div>
+          <div class="kpi"><small>Agenda</small><strong style="font-size:15px">Seg a Sáb</strong><a>Configurar grade</a></div>
+        </div>
+        <div class="card" style="margin-top:10px"><div class="linha"><b>Resumo do Espaço</b><span class="btn">Editar Perfil</span></div><div class="meta">Barbearia · Rua das Acácias, 210 - Centro</div><div class="meta">(11) 99876-5432</div></div>
+        <div class="card"><div class="linha"><b>Catálogo de Serviços</b><span class="btn">Ver Todos</span></div>
+          <div class="linha" style="margin-top:8px"><span style="font-size:13px">Corte Degradê / Social</span><span class="preco">R$ 40,00</span></div>
+          <div class="linha" style="margin-top:6px"><span style="font-size:13px">Barba na Toalha Quente</span><span class="preco">R$ 35,00</span></div>
+          <div class="linha" style="margin-top:6px"><span style="font-size:13px">Combo Corte + Barba</span><span class="preco">R$ 65,00</span></div>
+        </div>
+      </div>
+      <div class="nav"><div><i></i>Início</div><div><i></i>Explorar</div><div class="ativo"><i></i>Painel</div></div>
+    </div>
+  </div>
+
+  <div class="tela">
+    <p class="rotulo">P4. Configurar disponibilidade (UC06)</p>
+    <p class="rota">/dashboard/agenda/configuracao</p>
+    <div class="celular">
+      <div class="topo"><span class="logo">Agendou</span><span class="btn-mini">Sair</span></div>
+      <div class="conteudo">
+        <h2 style="margin-top:2px">Horários de funcionamento</h2>
+        <div class="dia"><div class="linha"><b style="font-size:14px">Segunda-feira</b><span class="chave"></span></div>
+          <div class="horas"><div>Abertura<span>09:00</span></div><div>Fechamento<span>18:00</span></div></div>
+          <div class="pausa">Intervalo de Pausa / Almoço: 12:00 às 13:00</div></div>
+        <div class="dia"><div class="linha"><b style="font-size:14px">Terça-feira</b><span class="chave"></span></div>
+          <div class="horas"><div>Abertura<span>09:00</span></div><div>Fechamento<span>18:00</span></div></div>
+          <div class="pausa">Intervalo de Pausa / Almoço: 12:00 às 13:00</div></div>
+        <div class="dia"><div class="linha"><b style="font-size:14px">Sábado</b><span class="chave"></span></div>
+          <div class="horas"><div>Abertura<span>09:00</span></div><div>Fechamento<span>14:00</span></div></div></div>
+        <div class="dia"><div class="linha"><b style="font-size:14px">Domingo</b><span class="chave off"></span></div><div class="pausa">Fechado</div></div>
+      </div>
+      <div class="principal">Salvar Horários de Funcionamento</div>
+      <div class="nav"><div><i></i>Início</div><div><i></i>Explorar</div><div class="ativo"><i></i>Painel</div></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

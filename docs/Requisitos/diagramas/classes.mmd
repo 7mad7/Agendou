@@ -1,0 +1,70 @@
+classDiagram
+  direction LR
+  class User {
+    +String id
+    +String email
+    +String passwordHash
+    +Role role
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+  class ClientProfile {
+    +String id
+    +String name
+    +Int age
+    +String gender
+  }
+  class MerchantProfile {
+    +String id
+    +String tradeName
+    +String cnpj
+    +String phone
+    +String category
+    +String description
+    +String address
+    +Float latitude
+    +Float longitude
+  }
+  class Service {
+    +String id
+    +String title
+    +String description
+    +Decimal price
+    +Int durationMinutes
+    +Boolean active
+  }
+  class MerchantAvailability {
+    +String id
+    +Int dayOfWeek
+    +Boolean isActive
+    +String openTime
+    +String closeTime
+    +String breakStart
+    +String breakEnd
+  }
+  class Booking {
+    +String id
+    +DateTime startTime
+    +DateTime endTime
+    +BookingStatus status
+  }
+  class Role {
+    <<enumeration>>
+    CLIENT
+    MERCHANT
+  }
+  class BookingStatus {
+    <<enumeration>>
+    PENDING
+    CONFIRMED
+    CANCELED
+  }
+  User "1" -- "0..1" ClientProfile : possui
+  User "1" -- "0..1" MerchantProfile : possui
+  MerchantProfile "1" -- "0..*" Service : oferece
+  MerchantProfile "1" -- "0..7" MerchantAvailability : define
+  MerchantProfile "1" -- "0..*" Booking : recebe
+  ClientProfile "1" -- "0..*" Booking : faz
+  Service "1" -- "0..*" Booking : é reservado em
+  User ..> Role
+  Booking ..> BookingStatus

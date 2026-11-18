@@ -1,0 +1,25 @@
+sequenceDiagram
+  autonumber
+  actor C as Cliente
+  participant UI as Página do comércio<br/>ou POST /api/bookings
+  participant A as createAtomicBookingAction
+  participant DB as PostgreSQL
+  C->>UI: Escolhe serviço, data e horário
+  UI->>A: merchantId, serviceId, date, timeSlot
+  A->>A: Valida dados (Zod) e exige sessão
+  alt sem sessão
+    A-->>UI: requiresAuth (HTTP 401)
+  else sessão válida
+    A->>DB: BEGIN (isolamento SERIALIZABLE)
+    A->>DB: Busca serviço ativo do comércio
+    A->>DB: Procura reserva CONFIRMED que se sobreponha
+    alt horário ocupado
+      A->>DB: ROLLBACK
+      A-->>UI: conflict (HTTP 409)
+    else horário livre
+      A->>DB: INSERT Booking (único por comércio + início)
+      A->>DB: COMMIT
+      A-->>UI: Resumo + link do WhatsApp (HTTP 201)
+    end
+  end
+  UI-->>C: Confirmação ou mensagem de erro

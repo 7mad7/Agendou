@@ -1,0 +1,65 @@
+erDiagram
+  direction LR
+  User ||--o| ClientProfile : "possui"
+  User ||--o| MerchantProfile : "possui"
+  MerchantProfile ||--o{ Service : "oferece"
+  MerchantProfile ||--o{ MerchantAvailability : "define"
+  MerchantProfile ||--o{ Booking : "recebe"
+  ClientProfile ||--o{ Booking : "faz"
+  Service ||--o{ Booking : "reservado em"
+
+  User {
+    text id PK
+    text email UK
+    text passwordHash
+    Role role
+    timestamp createdAt
+    timestamp updatedAt
+  }
+  ClientProfile {
+    text id PK
+    text userId FK,UK
+    text name
+    int age
+    text gender
+  }
+  MerchantProfile {
+    text id PK
+    text userId FK,UK
+    text tradeName
+    text cnpj UK
+    text phone
+    text category
+    text description
+    text address
+    float latitude
+    float longitude
+  }
+  Service {
+    text id PK
+    text merchantId FK
+    text title
+    text description
+    decimal price
+    int durationMinutes
+    boolean active
+  }
+  MerchantAvailability {
+    text id PK
+    text merchantId FK
+    int dayOfWeek
+    boolean isActive
+    text openTime
+    text closeTime
+    text breakStart
+    text breakEnd
+  }
+  Booking {
+    text id PK
+    text clientId FK
+    text merchantId FK
+    text serviceId FK
+    timestamp startTime
+    timestamp endTime
+    BookingStatus status
+  }

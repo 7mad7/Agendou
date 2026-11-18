@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Arquitetura em camadas do Agendou</title>
+<style>
+  body { margin: 0; background: #fff; font-family: Arial, "Liberation Sans", sans-serif; color: #1d2b44; }
+  #diagrama { width: 1100px; padding: 28px; box-sizing: border-box; display: grid; grid-template-columns: 1fr 230px; gap: 22px; }
+  h1 { grid-column: 1 / 3; margin: 0 0 4px; font-size: 22px; }
+  .pilha { display: flex; flex-direction: column; gap: 0; }
+  .camada { border: 1.6px solid #2F5597; border-radius: 10px; padding: 14px 18px; background: #F2F6FC; display: grid; grid-template-columns: 210px 1fr; gap: 14px; align-items: center; }
+  .camada b { font-size: 17px; }
+  .camada .tech { font-size: 13px; color: #555; margin-top: 4px; }
+  .camada .itens { font-size: 14px; line-height: 1.45; }
+  .camada code { font-family: "DejaVu Sans Mono", monospace; font-size: 12.5px; background: #fff; border: 1px solid #d5deec; border-radius: 4px; padding: 0 4px; }
+  .seta { text-align: center; font-size: 13px; color: #555; padding: 3px 0; }
+  .seta::before { content: "▼"; display: block; color: #2F5597; font-size: 15px; line-height: 1; }
+  .banco { background: #E8EEF8; }
+  .lado { display: flex; flex-direction: column; gap: 14px; }
+  .caixa { border: 1.6px dashed #777; border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.4; background: #fff; }
+  .caixa b { font-size: 15px; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div id="diagrama">
+  <h1>Arquitetura em camadas do Agendou</h1>
+  <div class="pilha">
+    <div class="camada">
+      <div><b>1. Apresentação</b><div class="tech">Next.js App Router, React 19, Tailwind</div></div>
+      <div class="itens">Telas mobile-first em <code>src/app</code> e componentes em <code>src/components</code>. Validação visual dos formulários com React Hook Form + Zod.</div>
+    </div>
+    <div class="seta">chama</div>
+    <div class="camada">
+      <div><b>2. Aplicação</b><div class="tech">Server Actions e Route Handlers</div></div>
+      <div class="itens">Casos de uso em <code>src/actions</code> (auth, merchant, services, availability, discovery, booking). A API REST em <code>src/app/api</code> reaproveita as mesmas actions. <code>middleware.ts</code> protege o painel.</div>
+    </div>
+    <div class="seta">usa</div>
+    <div class="camada">
+      <div><b>3. Domínio e regras</b><div class="tech">TypeScript puro</div></div>
+      <div class="itens">Motor de horários <code>availability-engine</code>, esquemas de validação <code>validations</code>, sessão assinada <code>session</code> e formatadores.</div>
+    </div>
+    <div class="seta">persiste por</div>
+    <div class="camada">
+      <div><b>4. Persistência</b><div class="tech">Prisma ORM</div></div>
+      <div class="itens">Cliente Prisma em <code>src/lib/prisma.ts</code>, esquema em <code>db/schema.prisma</code> e migrações versionadas em <code>db/migrations</code>.</div>
+    </div>
+    <div class="seta">SQL</div>
+    <div class="camada banco">
+      <div><b>5. Dados</b><div class="tech">PostgreSQL 16</div></div>
+      <div class="itens">Tabelas User, ClientProfile, MerchantProfile, Service, MerchantAvailability e Booking, com restrições de unicidade e chaves estrangeiras.</div>
+    </div>
+  </div>
+  <div class="lado">
+    <div class="caixa"><b>Serviços externos</b>Geocodificação de endereços: OpenStreetMap Nominatim (camada 2).<br><br>Confirmação: link <code style="font-size:12px">wa.me</code> do WhatsApp gerado no agendamento.</div>
+    <div class="caixa"><b>Clientes da API</b>Postman e Newman (testes na CI) acessam a camada 2 por HTTP, com o cookie de sessão.</div>
+    <div class="caixa"><b>Qualidade</b>Vitest testa as camadas 3 e 4; Playwright testa a camada 1 de ponta a ponta.</div>
+  </div>
+</div>
+</body>
+</html>
