@@ -1,0 +1,16 @@
+ID,Item,Tipo,Caminho,Versão,Situação,Linha de base,Responsável,Última alteração,Observação
+IC-DOC-01,Plano de Projeto,Documento,docs/Planejamento/PlanoDeProjeto_Agendou.docx (+ .pdf),1.0,Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-02,Planilha de controle de ICs,Documento,docs/Ics/controleIC.csv,1.0,Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-13,README do repositório,Documento,README.md,Git (commit),Aprovado,—,Yuri Galvão Machado,17/11/2026,
+IC-DOC-14,Especificações das tarefas do MVP (TASK-01 a 07),Documento,.agents/,Git (commit),Aprovado,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-01,"Telas, componentes e arquivos públicos",Código-fonte,"src/app (exceto api), src/components, public/",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-02,Server Actions (casos de uso),Código-fonte,src/actions/,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-03,Motor de disponibilidade,Código-fonte,src/lib/availability-engine.ts,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-04,Validações (Zod),Código-fonte,src/lib/validations/,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-05,Sessão e controle de acesso,Código-fonte,"src/lib/session.ts, src/middleware.ts",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-07,Utilitários e cliente do banco,Código-fonte,"src/lib/formatters.ts, utils.ts, prisma.ts",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-DB-01,Esquema do banco de dados,Banco de dados,prisma/schema.prisma,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-DB-03,Dados de teste (seed),Banco de dados,prisma/seed.mjs,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-CFG-01,Dependências e scripts,Configuração,"package.json, package-lock.json",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-CFG-02,Configurações do projeto,Configuração,"tsconfig.json, next.config.ts, eslint.config.mjs, .gitignore, .env.example",Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-CFG-03,Script do banco de testes,Configuração,scripts/test-db.sh,Git (commit),Em uso,—,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
