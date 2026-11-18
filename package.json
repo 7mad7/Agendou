@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "setup:deps": "bash scripts/install-deps.sh",
+    "setup:local": "bash scripts/setup-local.sh",
     "db:test:start": "bash scripts/test-db.sh start",
     "db:test:stop": "bash scripts/test-db.sh stop",
     "db:test:status": "bash scripts/test-db.sh status",

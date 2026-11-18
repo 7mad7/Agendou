@@ -105,55 +105,74 @@ async function main() {
     },
   });
 
-  // 4. Serviços de teste para os comércios
-  await prisma.service.deleteMany({
-    where: { merchantId: { in: [barberMerchant.id, beautyMerchant.id] } },
-  });
+  // 4. Serviços de teste para os comércios (idempotente: preserva serviços e agendamentos existentes)
+  const seedServices = [
+    {
+      merchantId: barberMerchant.id,
+      title: "Corte Degradê / Social",
+      description: "Corte personalizado com lavagem e finalização.",
+      price: 40.0,
+      durationMinutes: 30,
+      active: true,
+    },
+    {
+      merchantId: barberMerchant.id,
+      title: "Barba na Toalha Quente",
+      description: "Alinhamento na navalha e hidratação com óleo essencial.",
+      price: 35.0,
+      durationMinutes: 30,
+      active: true,
+    },
+    {
+      merchantId: barberMerchant.id,
+      title: "Combo Corte + Barba",
+      description: "Atendimento completo com bebida cortesia.",
+      price: 65.0,
+      durationMinutes: 60,
+      active: true,
+    },
+    {
+      merchantId: beautyMerchant.id,
+      title: "Pé e Mão Tradicional",
+      description: "Cutilagem, hidratação e esmaltação completa.",
+      price: 55.0,
+      durationMinutes: 60,
+      active: true,
+    },
+    {
+      merchantId: beautyMerchant.id,
+      title: "Design de Sobrancelhas",
+      description: "Modelagem com linha e aplicação opcional de henna.",
+      price: 40.0,
+      durationMinutes: 30,
+      active: true,
+    },
+  ];
 
-  await prisma.service.createMany({
-    data: [
-      {
-        merchantId: barberMerchant.id,
-        title: "Corte Degradê / Social",
-        description: "Corte personalizado com lavagem e finalização.",
-        price: 40.0,
-        durationMinutes: 30,
-        active: true,
+  for (const item of seedServices) {
+    const existingService = await prisma.service.findFirst({
+      where: {
+        merchantId: item.merchantId,
+        title: item.title,
       },
-      {
-        merchantId: barberMerchant.id,
-        title: "Barba na Toalha Quente",
-        description: "Alinhamento na navalha e hidratação com óleo essencial.",
-        price: 35.0,
-        durationMinutes: 30,
-        active: true,
-      },
-      {
-        merchantId: barberMerchant.id,
-        title: "Combo Corte + Barba",
-        description: "Atendimento completo com bebida cortesia.",
-        price: 65.0,
-        durationMinutes: 60,
-        active: true,
-      },
-      {
-        merchantId: beautyMerchant.id,
-        title: "Pé e Mão Tradicional",
-        description: "Cutilagem, hidratação e esmaltação completa.",
-        price: 55.0,
-        durationMinutes: 60,
-        active: true,
-      },
-      {
-        merchantId: beautyMerchant.id,
-        title: "Design de Sobrancelhas",
-        description: "Modelagem com linha e aplicação opcional de henna.",
-        price: 40.0,
-        durationMinutes: 30,
-        active: true,
-      },
-    ],
-  });
+    });
+
+    if (existingService) {
+      await prisma.service.update({
+        where: { id: existingService.id },
+        data: {
+          description: item.description,
+          price: item.price,
+          durationMinutes: item.durationMinutes,
+          active: true,
+        },
+      });
+    } else {
+      await prisma.service.create({
+        data: item,
+      });
+    }
+  }
 
   // 5. Grade semanal de disponibilidade (Segunda a Domingo)
   for (const merchant of [barberMerchant, beautyMerchant]) {
