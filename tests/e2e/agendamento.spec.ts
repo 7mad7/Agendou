@@ -52,13 +52,16 @@ test("cliente agenda um horário de ponta a ponta (RF05, RF06)", async ({
   }
   expect(encontrou).toBe(true);
 
+  // Escolher o horário já abre a janela de confirmação; o botão "Continuar"
+  // da página só serve para reabri-la quando o cliente a fecha.
   await horarios.first().click();
-  await page.getByRole("button", { name: "Continuar" }).click();
-  await page
+  const confirmacao = page.getByRole("dialog");
+  await expect(confirmacao).toBeVisible();
+  await confirmacao
     .getByRole("button", { name: /Confirmar Agendamento Agora/ })
     .click();
 
   await expect(
-    page.getByText("Seu horário foi reservado com sucesso!")
+    confirmacao.getByText("Seu horário foi reservado com sucesso!")
   ).toBeVisible();
 });
