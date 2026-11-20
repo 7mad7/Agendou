@@ -1,0 +1,1042 @@
+openapi: 3.0.3
+info:
+  title: Agendou API
+  version: 1.0.0
+  description: |
+    Contrato da API REST do Agendou (IC-API-01), criado pela RFC-001.
+    As rotas ficam em `src/app/api` e reaproveitam as Server Actions do sistema.
+
+    **Autenticação:** login e cadastro gravam o cookie HTTP-only `agendou_session`
+    (validade de 7 dias). As rotas marcadas com cadeado exigem esse cookie.
+
+    **Formato das respostas:** `{ success, message?, data?, fieldErrors? }`.
+
+    **Códigos de status:** 200/201 sucesso · 400 requisição inválida ·
+    401 sem sessão ou credenciais erradas · 403 perfil sem permissão ·
+    404 recurso inexistente · 409 horário já reservado · 422 dados inválidos.
+servers:
+  - url: http://localhost:3000
+    description: Ambiente local e CI
+tags:
+  - name: RF01 Cadastro
+    description: Cadastro de contas de cliente e de comércio
+  - name: RF02 Autenticação
+    description: Login, sessão, logout e recuperação de senha
+  - name: RF03 Perfil e serviços
+    description: Perfil do comércio e catálogo de serviços
+  - name: RF04 Disponibilidade
+    description: Grade semanal de atendimento e horários livres
+  - name: RF05 Agendamento
+    description: Página pública do comércio e reserva de horário
+  - name: RF06 Busca
+    description: Descoberta de comércios
+  - name: Infraestrutura
+    description: Verificação de saúde da aplicação
+
+paths:
+  /api/health:
+    get:
+      tags: [Infraestrutura]
+      summary: Verifica se a aplicação e o banco estão no ar
+      operationId: getHealth
+      responses:
+        "200":
+          description: Aplicação e banco disponíveis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "503":
+          description: Banco indisponível
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /api/auth/register/client:
+    post:
+      tags: [RF01 Cadastro]
+      summary: Cadastra um cliente e inicia a sessão
+      operationId: registerClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientRegisterInput"
+      responses:
+        "201":
+          description: Conta criada; cookie de sessão gravado
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/SessionCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/auth/register/merchant:
+    post:
+      tags: [RF01 Cadastro]
+      summary: Cadastra um comércio (CNPJ válido e único) e inicia a sessão
+      operationId: registerMerchant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MerchantRegisterInput"
+      responses:
+        "201":
+          description: Comércio criado; cookie de sessão gravado
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/SessionCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/auth/login:
+    post:
+      tags: [RF02 Autenticação]
+      summary: Autentica por e-mail e senha
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login realizado; cookie de sessão gravado
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/SessionCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: E-mail ou senha inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/auth/logout:
+    post:
+      tags: [RF02 Autenticação]
+      summary: Encerra a sessão
+      operationId: logout
+      responses:
+        "200":
+          description: Sessão encerrada; cookie removido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /api/auth/session:
+    get:
+      tags: [RF02 Autenticação]
+      summary: Retorna o usuário da sessão atual
+      operationId: getSession
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Sessão válida
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Session"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/auth/forgot-password:
+    post:
+      tags: [RF02 Autenticação]
+      summary: Solicita recuperação de senha (resposta sempre genérica)
+      description: |
+        Não revela se o e-mail existe. No MVP o envio real do e-mail está fora do escopo.
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordInput"
+      responses:
+        "200":
+          description: Mensagem genérica de confirmação
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/merchant/profile:
+    get:
+      tags: [RF03 Perfil e serviços]
+      summary: Consulta o perfil do comércio autenticado
+      operationId: getMerchantProfile
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Perfil do comércio
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/MerchantProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [RF03 Perfil e serviços]
+      summary: Atualiza o perfil do comércio autenticado
+      operationId: updateMerchantProfile
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MerchantProfileInput"
+      responses:
+        "200":
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/MerchantProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/merchant/services:
+    get:
+      tags: [RF03 Perfil e serviços]
+      summary: Lista os serviços ativos do comércio autenticado
+      operationId: listMerchantServices
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Lista de serviços
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Service"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [RF03 Perfil e serviços]
+      summary: Cadastra um serviço no catálogo
+      operationId: createMerchantService
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "201":
+          description: Serviço criado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Service"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/merchant/services/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Identificador do serviço
+    put:
+      tags: [RF03 Perfil e serviços]
+      summary: Edita um serviço do catálogo
+      operationId: updateMerchantService
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "200":
+          description: Serviço atualizado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Service"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [RF03 Perfil e serviços]
+      summary: Remove o serviço do catálogo ativo (exclusão lógica)
+      operationId: deleteMerchantService
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Serviço desativado; o histórico de agendamentos é preservado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/merchant/availability:
+    get:
+      tags: [RF04 Disponibilidade]
+      summary: Consulta a grade semanal do comércio autenticado
+      operationId: getMerchantAvailability
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Grade com os 7 dias (segunda a domingo)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/DayAvailability"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [RF04 Disponibilidade]
+      summary: Salva a grade semanal de atendimento
+      operationId: saveMerchantAvailability
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeeklyAvailabilityInput"
+      responses:
+        "200":
+          description: Grade salva
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          description: Grade inválida (ex. fechamento antes da abertura, pausa fora do expediente)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /api/merchants:
+    get:
+      tags: [RF06 Busca]
+      summary: Busca comércios por nome, categoria e ordenação
+      operationId: searchMerchants
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Trecho do nome do comércio
+        - name: category
+          in: query
+          schema:
+            type: string
+            example: barbearia
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [proximity, rating, alphabetical]
+            default: rating
+          description: Sem lat/lng, "proximity" é trocado por "rating"
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lng
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Resultado da busca
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/DiscoveryResult"
+
+  /api/merchants/{id}:
+    get:
+      tags: [RF05 Agendamento]
+      summary: Dados públicos do comércio e serviços ativos
+      operationId: getPublicMerchant
+      parameters:
+        - $ref: "#/components/parameters/MerchantId"
+      responses:
+        "200":
+          description: Comércio encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/PublicMerchant"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/merchants/{id}/slots:
+    get:
+      tags: [RF04 Disponibilidade, RF05 Agendamento]
+      summary: Horários livres do comércio em uma data
+      operationId: getAvailableSlots
+      parameters:
+        - $ref: "#/components/parameters/MerchantId"
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-01"
+        - name: durationMinutes
+          in: query
+          schema:
+            type: integer
+            minimum: 5
+            maximum: 480
+          description: Duração do serviço. Pode ser omitida se serviceId for informado.
+        - name: serviceId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de horários "HH:mm" (vazia se o dia estiver fechado ou lotado)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                          example: "09:00"
+        "422":
+          description: Data ou duração inválida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+  /api/bookings:
+    post:
+      tags: [RF05 Agendamento]
+      summary: Reserva um horário (transação atômica, sem reserva dupla)
+      operationId: createBooking
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Agendamento confirmado, com link pronto para o WhatsApp
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ActionResult"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/BookingSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          description: Login necessário; traz loginRedirectUrl
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+        "409":
+          description: Outro cliente já reservou este horário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActionResult"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: agendou_session
+
+  headers:
+    SessionCookie:
+      description: Cookie HTTP-only `agendou_session` (SameSite=Lax, 7 dias)
+      schema:
+        type: string
+
+  parameters:
+    MerchantId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Identificador do comércio (também usado como slug em /c/{id})
+
+  responses:
+    BadRequest:
+      description: Corpo ausente, JSON inválido ou regra de negócio violada
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionResult"
+    Unauthorized:
+      description: Sessão ausente ou expirada
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionResult"
+    Forbidden:
+      description: O perfil da sessão não tem acesso a este recurso
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionResult"
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionResult"
+    ValidationError:
+      description: Dados inválidos; fieldErrors traz as mensagens por campo
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ActionResult"
+
+  schemas:
+    ActionResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        unauthorized:
+          type: boolean
+        requiresAuth:
+          type: boolean
+        loginRedirectUrl:
+          type: string
+        conflict:
+          type: boolean
+
+    AuthResult:
+      allOf:
+        - $ref: "#/components/schemas/ActionResult"
+        - type: object
+          properties:
+            redirectTo:
+              type: string
+              example: /dashboard
+
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        database:
+          type: string
+          enum: [up, down]
+
+    ClientRegisterInput:
+      type: object
+      required: [name, age, gender, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        age:
+          type: integer
+          minimum: 14
+          maximum: 120
+        gender:
+          type: string
+          example: FEMININO
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          description: Mínimo de 8 caracteres, com pelo menos uma letra e um número
+
+    MerchantRegisterInput:
+      type: object
+      required: [tradeName, email, cnpj, category, address, password]
+      properties:
+        tradeName:
+          type: string
+          minLength: 2
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        cnpj:
+          type: string
+          description: 14 dígitos com dígitos verificadores válidos; aceita máscara
+          example: 11.222.333/0001-81
+        category:
+          type: string
+          example: barbearia
+        address:
+          type: string
+          minLength: 5
+          maxLength: 200
+        password:
+          type: string
+          minLength: 8
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        callbackUrl:
+          type: string
+          description: Caminho interno para onde voltar após o login
+
+    ForgotPasswordInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    Session:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [CLIENT, MERCHANT]
+        name:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+    MerchantProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        email:
+          type: string
+        tradeName:
+          type: string
+        cnpj:
+          type: string
+        phone:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+
+    MerchantProfileInput:
+      type: object
+      required: [tradeName, category, address]
+      properties:
+        tradeName:
+          type: string
+          minLength: 2
+          maxLength: 120
+        phone:
+          type: string
+          maxLength: 20
+          description: Vazio ou telefone com DDD (10 dígitos ou mais)
+        category:
+          type: string
+        description:
+          type: string
+          maxLength: 500
+        address:
+          type: string
+          minLength: 5
+          maxLength: 200
+        latitude:
+          type: number
+          nullable: true
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          nullable: true
+          minimum: -180
+          maximum: 180
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+        merchantId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          example: 40
+        durationMinutes:
+          type: integer
+          example: 30
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    ServiceInput:
+      type: object
+      required: [title, price, durationMinutes]
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 300
+        price:
+          type: number
+          exclusiveMinimum: true
+          minimum: 0
+          maximum: 99999.99
+        durationMinutes:
+          type: integer
+          minimum: 5
+          maximum: 480
+
+    DayAvailability:
+      type: object
+      required: [dayOfWeek, isActive, openTime, closeTime, hasBreak, breakStart, breakEnd]
+      properties:
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: 0 = domingo, 1 = segunda ... 6 = sábado
+        isActive:
+          type: boolean
+        openTime:
+          type: string
+          pattern: "^([01]\\d|2[0-3]):([0-5]\\d)$"
+          example: "09:00"
+        closeTime:
+          type: string
+          example: "18:00"
+        hasBreak:
+          type: boolean
+        breakStart:
+          type: string
+          example: "12:00"
+        breakEnd:
+          type: string
+          example: "13:00"
+
+    WeeklyAvailabilityInput:
+      type: object
+      required: [days]
+      properties:
+        days:
+          type: array
+          minItems: 7
+          maxItems: 7
+          items:
+            $ref: "#/components/schemas/DayAvailability"
+
+    DiscoveryMerchant:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        tradeName:
+          type: string
+        category:
+          type: string
+        categoryLabel:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        distanceKm:
+          type: number
+          nullable: true
+        rating:
+          type: number
+          description: Nota demonstrativa (simulada); avaliações reais estão fora do escopo do MVP
+        reviewCount:
+          type: integer
+          description: Quantidade demonstrativa (simulada)
+        servicesCount:
+          type: integer
+        startingPrice:
+          type: number
+          nullable: true
+
+    DiscoveryResult:
+      type: object
+      properties:
+        merchants:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiscoveryMerchant"
+        appliedOrder:
+          type: string
+          enum: [proximity, rating, alphabetical]
+        usedFallbackOrder:
+          type: boolean
+        hasClientCoordinates:
+          type: boolean
+
+    PublicService:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        durationMinutes:
+          type: integer
+
+    PublicMerchant:
+      type: object
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        tradeName:
+          type: string
+        category:
+          type: string
+        categoryLabel:
+          type: string
+        address:
+          type: string
+        description:
+          type: string
+        phone:
+          type: string
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicService"
+
+    BookingInput:
+      type: object
+      required: [merchantId, serviceId, date, timeSlot]
+      properties:
+        merchantId:
+          type: string
+        serviceId:
+          type: string
+        date:
+          type: string
+          format: date
+          example: "2026-12-01"
+        timeSlot:
+          type: string
+          example: "09:00"
+
+    BookingSummary:
+      type: object
+      properties:
+        bookingId:
+          type: string
+        merchantName:
+          type: string
+        merchantPhone:
+          type: string
+        serviceTitle:
+          type: string
+        servicePrice:
+          type: number
+        durationMinutes:
+          type: integer
+        dateFormatted:
+          type: string
+          example: 01/12/2026
+        timeSlot:
+          type: string
+        whatsappUrl:
+          type: string
+        whatsappMessage:
+          type: string
