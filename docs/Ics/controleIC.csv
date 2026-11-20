@@ -1,35 +1,35 @@
 ID,Item,Tipo,Caminho,Versão,Situação,Linha de base,Responsável,Última alteração,Observação
-IC-DOC-01,Plano de Projeto,Documento,docs/Planejamento/PlanoDeProjeto_Agendou.docx (+ .pdf),1.2,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,17/11/2026,
-IC-DOC-02,Planilha de controle de ICs,Documento,docs/Ics/controleIC.csv,1.3,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,20/11/2026,
-IC-DOC-03,Documento de Requisitos,Documento,docs/Requisitos/DocumentoRequisitos_Agendou.docx (+ .pdf),1.1,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Mateus Cunha Rodrigues,17/11/2026,
-IC-DOC-04,Especificação de Requisitos de Software (ERS),Documento,docs/Requisitos/ERS_Agendou.docx (+ .pdf),1.0,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Mateus Cunha Rodrigues,17/11/2026,
-IC-DOC-05,Inventário de ICs,Documento,docs/Ics/ICs_Agendou.docx (+ .pdf),1.1,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,20/11/2026,
-IC-DOC-06,Matriz de Rastreabilidade (RTM),Documento,docs/Requisitos/RTM_Agendou.docx (+ .pdf),1.0,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Mateus Cunha Rodrigues,17/11/2026,
-IC-DOC-07,Status Accounting,Documento,docs/StatusAccounting/StatusAccounting_Agendou.docx (+ .pdf),1.1,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,20/11/2026,
-IC-DOC-08,Formulários do PCM,Planilha,docs/PCM/PCM_Agendou.xlsx,1.1,Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,20/11/2026,
-IC-DOC-09,Diagramas (fontes e imagens),Documento,docs/Requisitos/diagramas/,Git (commit),Aprovado,"BL-REQ-S1, BL-IMPL-S2",Mateus Cunha Rodrigues,17/11/2026,
-IC-DOC-10,Auditoria Funcional (FCA),Documento,docs/Auditorias/FCA_Agendou.docx (+ .pdf),—,Planejado,—,Ryan Suyler Benlolo da Costa,—,
-IC-DOC-11,Auditoria Física (PCA),Documento,docs/Auditorias/PCA_Agendou.docx (+ .pdf),—,Planejado,—,Welliton Medeiros Frazão de Matos,—,
-IC-DOC-12,Relatório Consolidado Final,Documento,docs/Relatorio/Agendou_Relatorio_Consolidado_Final.docx (+ .pdf),—,Planejado,—,Yuri Galvão Machado,—,
-IC-DOC-13,README do repositório,Documento,README.md,Git (commit),Alterado (RFC-001),"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,20/11/2026,"Logo, funcionalidades, setup rápido, estrutura, testes e GC (RFC-001)"
-IC-DOC-14,Especificações das tarefas do MVP (TASK-01 a 07),Documento,.agents/,Git (commit),Aprovado,"BL-REQ-S1, BL-IMPL-S2",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-SRC-01,"Telas, componentes e arquivos públicos",Código-fonte,"src/app (exceto api), src/components, public/",Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Logo do projeto (public/logo.png) usada no README (RFC-001)
-IC-SRC-02,Server Actions (casos de uso),Código-fonte,src/actions/,Git (commit),Em uso,BL-IMPL-S2,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-SRC-03,Motor de disponibilidade,Código-fonte,src/lib/availability-engine.ts,Git (commit),Em uso,BL-IMPL-S2,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-SRC-04,Validações (Zod),Código-fonte,src/lib/validations/,Git (commit),Em uso,BL-IMPL-S2,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-SRC-05,Sessão e controle de acesso,Código-fonte,"src/lib/session.ts, src/middleware.ts",Git (commit),Em uso,BL-IMPL-S2,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-SRC-06,API REST,Código-fonte,"src/app/api/, src/lib/api/http.ts",Git (commit),Criado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Validado pela CI
-IC-SRC-07,Utilitários e cliente do banco,Código-fonte,"src/lib/formatters.ts, utils.ts, prisma.ts",Git (commit),Em uso,BL-IMPL-S2,Yuri Galvão Machado,17/11/2026,Herdado do Lotou
-IC-DB-01,Esquema do banco de dados,Banco de dados,db/schema.prisma,Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Movido de prisma/ para db/ (RFC-001)
-IC-DB-02,Migrações,Banco de dados,db/migrations/,Git (commit),Criado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Validado pela CI
-IC-DB-03,Dados de teste (seed),Banco de dados,db/seed.mjs,Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Movido de prisma/ para db/; seed idempotente (RFC-001)
-IC-API-01,Contrato da API (OpenAPI),API,docs/api/openapi.yaml,Git (commit),Criado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Validado pela CI
-IC-API-02,Coleção Postman,API,docs/api/postman_collection.json,Git (commit),Criado (RFC-001),BL-IMPL-S2,Ryan Suyler Benlolo da Costa,20/11/2026,Validado pela CI
-IC-TST-01,Testes unitários,Teste,tests/unit/,Git (commit),Criado (RFC-001),BL-IMPL-S2,Ryan Suyler Benlolo da Costa,20/11/2026,Validado pela CI
-IC-TST-02,Testes de integração,Teste,tests/integration/,Git (commit),Criado (RFC-001),BL-IMPL-S2,Ryan Suyler Benlolo da Costa,20/11/2026,Validado pela CI
-IC-TST-03,Testes E2E,Teste,tests/e2e/,Git (commit),Criado (RFC-001),BL-IMPL-S2,Ryan Suyler Benlolo da Costa,20/11/2026,Validado pela CI
-IC-TST-04,Configuração dos testes,Teste,"vitest.config.ts, playwright.config.ts",Git (commit),Criado (RFC-001),BL-IMPL-S2,Ryan Suyler Benlolo da Costa,20/11/2026,Validado pela CI
-IC-CI-01,Pipeline de integração contínua,CI,.github/workflows/ci.yml,Git (commit),Criado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Validado pela CI
-IC-CFG-01,Dependências e scripts,Configuração,"package.json, package-lock.json",Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,"Scripts de setup, migração e testes; configuração do Prisma (RFC-001)"
-IC-CFG-02,Configurações do projeto,Configuração,"tsconfig.json, next.config.ts, eslint.config.mjs, .gitignore, .env.example",Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,.gitignore ignora relatórios de teste (RFC-001)
-IC-CFG-03,Scripts do ambiente local,Configuração,"scripts/ (test-db.sh, setup-local.sh, install-deps.sh)",Git (commit),Alterado (RFC-001),BL-IMPL-S2,Yuri Galvão Machado,20/11/2026,Ampliado para scripts/ (setup-local.sh e install-deps.sh); usa migrações e db/seed.mjs (RFC-001)
+IC-DOC-01,Plano de Projeto,Documento,docs/Planejamento/PlanoDeProjeto_Agendou.docx (+ .pdf),1.2,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,
+IC-DOC-02,Planilha de controle de ICs,Documento,docs/Ics/controleIC.csv,1.4,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-DOC-03,Documento de Requisitos,Documento,docs/Requisitos/DocumentoRequisitos_Agendou.docx (+ .pdf),1.1,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Mateus Cunha Rodrigues,17/11/2026,
+IC-DOC-04,Especificação de Requisitos de Software (ERS),Documento,docs/Requisitos/ERS_Agendou.docx (+ .pdf),1.0,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Mateus Cunha Rodrigues,17/11/2026,
+IC-DOC-05,Inventário de ICs,Documento,docs/Ics/ICs_Agendou.docx (+ .pdf),1.1,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-DOC-06,Matriz de Rastreabilidade (RTM),Documento,docs/Requisitos/RTM_Agendou.docx (+ .pdf),1.0,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Mateus Cunha Rodrigues,17/11/2026,
+IC-DOC-07,Status Accounting,Documento,docs/StatusAccounting/StatusAccounting_Agendou.docx (+ .pdf),1.2,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-DOC-08,Formulários do PCM,Planilha,docs/PCM/PCM_Agendou.xlsx,1.1,Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-DOC-09,Diagramas (fontes e imagens),Documento,docs/Requisitos/diagramas/,Git (commit),Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Mateus Cunha Rodrigues,17/11/2026,
+IC-DOC-10,Auditoria Funcional (FCA),Documento,docs/Auditorias/FCA_Agendou.docx (+ .pdf),1.0,Em linha de base,BL-REL-S3,Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-DOC-11,Auditoria Física (PCA),Documento,docs/Auditorias/PCA_Agendou.docx (+ .pdf),1.0,Em linha de base,BL-REL-S3,Welliton Medeiros Frazão de Matos,20/11/2026,
+IC-DOC-12,Relatório Consolidado Final,Documento,docs/Relatorio/Agendou_Relatorio_Consolidado_Final.docx (+ .pdf),1.0,Em linha de base,BL-REL-S3,Yuri Galvão Machado,20/11/2026,
+IC-DOC-13,README do repositório,Documento,README.md,Git (commit),Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,"Logo, funcionalidades, setup rápido, estrutura, testes e GC (RFC-001)"
+IC-DOC-14,Especificações das tarefas do MVP (TASK-01 a 07),Documento,.agents/,Git (commit),Em linha de base,"BL-REQ-S1, BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-01,"Telas, componentes e arquivos públicos",Código-fonte,"src/app (exceto api), src/components, public/",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,Logo do projeto (public/logo.png) usada no README (RFC-001)
+IC-SRC-02,Server Actions (casos de uso),Código-fonte,src/actions/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-03,Motor de disponibilidade,Código-fonte,src/lib/availability-engine.ts,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-04,Validações (Zod),Código-fonte,src/lib/validations/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-05,Sessão e controle de acesso,Código-fonte,"src/lib/session.ts, src/middleware.ts",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-SRC-06,API REST,Código-fonte,"src/app/api/, src/lib/api/http.ts",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-SRC-07,Utilitários e cliente do banco,Código-fonte,"src/lib/formatters.ts, utils.ts, prisma.ts",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,17/11/2026,Herdado do Lotou
+IC-DB-01,Esquema do banco de dados,Banco de dados,db/schema.prisma,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,Movido de prisma/ para db/ (RFC-001)
+IC-DB-02,Migrações,Banco de dados,db/migrations/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-DB-03,Dados de teste (seed),Banco de dados,db/seed.mjs,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,Movido de prisma/ para db/; seed idempotente (RFC-001)
+IC-API-01,Contrato da API (OpenAPI),API,docs/api/openapi.yaml,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-API-02,Coleção Postman,API,docs/api/postman_collection.json,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-TST-01,Testes unitários,Teste,tests/unit/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-TST-02,Testes de integração,Teste,tests/integration/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-TST-03,Testes E2E,Teste,tests/e2e/,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-TST-04,Configuração dos testes,Teste,"vitest.config.ts, playwright.config.ts",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Ryan Suyler Benlolo da Costa,20/11/2026,
+IC-CI-01,Pipeline de integração contínua,CI,.github/workflows/ci.yml,Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,
+IC-CFG-01,Dependências e scripts,Configuração,"package.json, package-lock.json",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,"Scripts de setup, migração e testes; configuração do Prisma (RFC-001)"
+IC-CFG-02,Configurações do projeto,Configuração,"tsconfig.json, next.config.ts, eslint.config.mjs, .gitignore, .env.example",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,.gitignore ignora relatórios de teste (RFC-001)
+IC-CFG-03,Scripts do ambiente local,Configuração,"scripts/ (test-db.sh, setup-local.sh, install-deps.sh)",Git (commit),Em linha de base,"BL-IMPL-S2, BL-REL-S3",Yuri Galvão Machado,20/11/2026,Ampliado para scripts/ (setup-local.sh e install-deps.sh); usa migrações e db/seed.mjs (RFC-001)

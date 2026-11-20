@@ -113,6 +113,9 @@ A API fica em `src/app/api` e reaproveita as Server Actions. O contrato completo
 | Matriz de Rastreabilidade (RTM) | [PDF](docs/Requisitos/RTM_Agendou.pdf) · [DOCX](docs/Requisitos/RTM_Agendou.docx) | IC-DOC-06 |
 | Inventário de Itens de Configuração | [PDF](docs/Ics/ICs_Agendou.pdf) · [DOCX](docs/Ics/ICs_Agendou.docx) | IC-DOC-05 |
 | Status Accounting | [PDF](docs/StatusAccounting/StatusAccounting_Agendou.pdf) · [DOCX](docs/StatusAccounting/StatusAccounting_Agendou.docx) | IC-DOC-07 |
+| Auditoria Funcional (FCA) | [PDF](docs/Auditorias/FCA_Agendou.pdf) · [DOCX](docs/Auditorias/FCA_Agendou.docx) | IC-DOC-10 |
+| Auditoria Física (PCA) | [PDF](docs/Auditorias/PCA_Agendou.pdf) · [DOCX](docs/Auditorias/PCA_Agendou.docx) | IC-DOC-11 |
+| Relatório Consolidado Final | [PDF](docs/Relatorio/Agendou_Relatorio_Consolidado_Final.pdf) · [DOCX](docs/Relatorio/Agendou_Relatorio_Consolidado_Final.docx) | IC-DOC-12 |
 | Planilha de controle de ICs | [controleIC.csv](docs/Ics/controleIC.csv) | IC-DOC-02 |
 | Formulários do Processo de Controle de Mudanças | [PCM_Agendou.xlsx](docs/PCM/PCM_Agendou.xlsx) | IC-DOC-08 |
 | Diagramas (casos de uso, classes, banco, arquitetura, protótipos) | [docs/Requisitos/diagramas](docs/Requisitos/diagramas) | IC-DOC-09 |
