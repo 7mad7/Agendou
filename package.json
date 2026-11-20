@@ -7,14 +7,28 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "setup:deps": "bash scripts/install-deps.sh",
     "setup:local": "bash scripts/setup-local.sh",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:status": "prisma migrate status",
+    "db:seed": "node db/seed.mjs",
     "db:test:start": "bash scripts/test-db.sh start",
     "db:test:stop": "bash scripts/test-db.sh stop",
     "db:test:status": "bash scripts/test-db.sh status",
     "db:test:push": "npx prisma db push",
-    "db:test:seed": "node --env-file=.env prisma/seed.mjs",
-    "db:test:reset": "bash scripts/test-db.sh reset"
+    "db:test:seed": "node --env-file=.env db/seed.mjs",
+    "db:test:reset": "bash scripts/test-db.sh reset",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:api": "newman run docs/api/postman_collection.json --env-var baseUrl=http://localhost:3000",
+    "test:e2e": "playwright test"
+  },
+  "prisma": {
+    "schema": "db/schema.prisma",
+    "seed": "node db/seed.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -30,6 +44,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -37,8 +52,10 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "newman": "^6.2.3",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

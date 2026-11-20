@@ -1,0 +1,1607 @@
+{
+  "info": {
+    "name": "Agendou API",
+    "description": "Coleção de testes da API do Agendou (IC-API-02). Executada pela CI com Newman. Contrato: docs/api/openapi.yaml.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 Infraestrutura",
+      "description": "Aplicação e banco no ar.",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Gera dados únicos para esta execução (e-mails e um CNPJ válido)",
+                  "const runId = String(Date.now());",
+                  "function gerarCnpj() {",
+                  "  let base;",
+                  "  do {",
+                  "    base = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10));",
+                  "  } while (base.every((d) => d === base[0]));",
+                  "  const dv = (digitos) => {",
+                  "    const pesos = digitos.length === 12",
+                  "      ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]",
+                  "      : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];",
+                  "    const soma = digitos.reduce((acc, d, i) => acc + d * pesos[i], 0);",
+                  "    const resto = soma % 11;",
+                  "    return resto < 2 ? 0 : 11 - resto;",
+                  "  };",
+                  "  const d1 = dv(base);",
+                  "  const d2 = dv([...base, d1]);",
+                  "  return [...base, d1, d2].join(\"\");",
+                  "}",
+                  "pm.collectionVariables.set(\"runId\", runId);",
+                  "pm.collectionVariables.set(\"cnpj\", gerarCnpj());",
+                  "pm.collectionVariables.set(\"merchantName\", `Barbearia Newman ${runId}`);",
+                  "pm.collectionVariables.set(\"merchantEmail\", `comercio.${runId}@teste.com`);",
+                  "pm.collectionVariables.set(\"clientEmail\", `cliente.${runId}@teste.com`);",
+                  "pm.collectionVariables.set(\"password\", \"Senha1234\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Banco disponível\", () => pm.expect(pm.response.json().database).to.eql(\"up\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 RF02 Acesso sem sessão",
+      "description": "Rotas protegidas recusam quem não fez login.",
+      "item": [
+        {
+          "name": "Sessão sem cookie retorna 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "session"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Serviços do comércio sem cookie retornam 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agendar sem login retorna 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchantId\": \"inexistente\",\n  \"serviceId\": \"inexistente\",\n  \"date\": \"2030-01-15\",\n  \"timeSlot\": \"09:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Pede login\", () => pm.expect(pm.response.json().requiresAuth).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 RF01 Cadastro de comércio",
+      "description": "Cadastro com CNPJ válido e único (RN01).",
+      "item": [
+        {
+          "name": "CNPJ inválido retorna 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register/merchant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "merchant"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tradeName\": \"{{merchantName}}\",\n  \"email\": \"{{merchantEmail}}\",\n  \"cnpj\": \"11.222.333/0001-00\",\n  \"category\": \"barbearia\",\n  \"address\": \"Rua dos Testes, 123 - Centro\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erro no campo cnpj\", () => pm.expect(pm.response.json().fieldErrors).to.have.property(\"cnpj\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar comércio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register/merchant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "merchant"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tradeName\": \"{{merchantName}}\",\n  \"email\": \"{{merchantEmail}}\",\n  \"cnpj\": \"{{cnpj}}\",\n  \"category\": \"barbearia\",\n  \"address\": \"Rua dos Testes, 123 - Centro\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Vai para o painel\", () => pm.expect(pm.response.json().redirectTo).to.eql(\"/dashboard\"));",
+                  "",
+                  "// Guarda o cookie de sessão devolvido pela API",
+                  "const setCookies = pm.response.headers.all()",
+                  "  .filter((h) => h.key.toLowerCase() === \"set-cookie\")",
+                  "  .map((h) => h.value)",
+                  "  .join(\"; \");",
+                  "const achado = setCookies.match(/agendou_session=[^;]+/);",
+                  "if (achado) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", achado[0]);",
+                  "} else if (pm.cookies.has(\"agendou_session\")) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", \"agendou_session=\" + pm.cookies.get(\"agendou_session\"));",
+                  "}",
+                  "pm.test(\"Cookie de sessão HTTP-only foi gravado\", () => {",
+                  "  pm.expect(pm.collectionVariables.get(\"merchantCookie\")).to.match(/^agendou_session=/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CNPJ já cadastrado retorna 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register/merchant",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "merchant"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tradeName\": \"{{merchantName}}\",\n  \"email\": \"outro.{{merchantEmail}}\",\n  \"cnpj\": \"{{cnpj}}\",\n  \"category\": \"barbearia\",\n  \"address\": \"Rua dos Testes, 123 - Centro\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erro no campo cnpj\", () => pm.expect(pm.response.json().fieldErrors).to.have.property(\"cnpj\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 RF02 Login",
+      "description": "Autenticação por e-mail e senha.",
+      "item": [
+        {
+          "name": "Senha errada retorna 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{merchantEmail}}\",\n  \"password\": \"SenhaErrada1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login do comerciante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{merchantEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "// Guarda o cookie de sessão devolvido pela API",
+                  "const setCookies = pm.response.headers.all()",
+                  "  .filter((h) => h.key.toLowerCase() === \"set-cookie\")",
+                  "  .map((h) => h.value)",
+                  "  .join(\"; \");",
+                  "const achado = setCookies.match(/agendou_session=[^;]+/);",
+                  "if (achado) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", achado[0]);",
+                  "} else if (pm.cookies.has(\"agendou_session\")) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", \"agendou_session=\" + pm.cookies.get(\"agendou_session\"));",
+                  "}",
+                  "pm.test(\"Cookie de sessão HTTP-only foi gravado\", () => {",
+                  "  pm.expect(pm.collectionVariables.get(\"merchantCookie\")).to.match(/^agendou_session=/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sessão do comerciante",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "session"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Perfil MERCHANT\", () => pm.expect(pm.response.json().data.role).to.eql(\"MERCHANT\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 RF03 Perfil e serviços",
+      "description": "Perfil do comércio e catálogo.",
+      "item": [
+        {
+          "name": "Atualizar perfil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "profile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tradeName\": \"{{merchantName}}\",\n  \"phone\": \"(11) 98888-7777\",\n  \"category\": \"barbearia\",\n  \"description\": \"Comércio criado pelos testes de API.\",\n  \"address\": \"Rua dos Testes, 123 - Centro\",\n  \"latitude\": -23.55,\n  \"longitude\": -46.63\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"merchantId\", p.id);",
+                  "pm.test(\"Telefone salvo\", () => pm.expect(p.phone).to.eql(\"(11) 98888-7777\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar serviço",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corte Newman\",\n  \"description\": \"Serviço de teste\",\n  \"price\": 45.5,\n  \"durationMinutes\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const s = pm.response.json().data;",
+                  "pm.collectionVariables.set(\"serviceId\", s.id);",
+                  "pm.test(\"Preço e duração\", () => { pm.expect(s.price).to.eql(45.5); pm.expect(s.durationMinutes).to.eql(30); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Serviço com duração inválida retorna 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Inválido\",\n  \"description\": \"\",\n  \"price\": 10,\n  \"durationMinutes\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erro no campo durationMinutes\", () => pm.expect(pm.response.json().fieldErrors).to.have.property(\"durationMinutes\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar serviço",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services",
+                "{{serviceId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corte Newman (editado)\",\n  \"description\": \"Serviço de teste\",\n  \"price\": 50,\n  \"durationMinutes\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Título atualizado\", () => pm.expect(pm.response.json().data.title).to.eql(\"Corte Newman (editado)\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar serviços",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Serviço está na lista\", () => pm.expect(pm.response.json().data.map((s) => s.id)).to.include(pm.collectionVariables.get(\"serviceId\")));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 RF04 Disponibilidade",
+      "description": "Grade semanal (RN05).",
+      "item": [
+        {
+          "name": "Fechamento antes da abertura retorna 422",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/availability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "availability"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"days\": [\n    {\n      \"dayOfWeek\": 0,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 1,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 2,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 3,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"07:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 4,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 5,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 6,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Salvar grade semanal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/availability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "availability"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"days\": [\n    {\n      \"dayOfWeek\": 0,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 1,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 2,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 3,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 4,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 5,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    },\n    {\n      \"dayOfWeek\": 6,\n      \"isActive\": true,\n      \"openTime\": \"08:00\",\n      \"closeTime\": \"20:00\",\n      \"hasBreak\": false,\n      \"breakStart\": \"12:00\",\n      \"breakEnd\": \"13:00\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar grade semanal",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/availability",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "availability"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"7 dias\", () => pm.expect(pm.response.json().data).to.have.lengthOf(7));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout do comerciante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 RF01 Cliente e permissões",
+      "description": "Cadastro de cliente e bloqueio do painel (RN09).",
+      "item": [
+        {
+          "name": "Cadastrar cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register/client",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "client"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cliente Newman\",\n  \"age\": 30,\n  \"gender\": \"FEMININO\",\n  \"email\": \"{{clientEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "// Guarda o cookie de sessão devolvido pela API",
+                  "const setCookies = pm.response.headers.all()",
+                  "  .filter((h) => h.key.toLowerCase() === \"set-cookie\")",
+                  "  .map((h) => h.value)",
+                  "  .join(\"; \");",
+                  "const achado = setCookies.match(/agendou_session=[^;]+/);",
+                  "if (achado) {",
+                  "  pm.collectionVariables.set(\"clientCookie\", achado[0]);",
+                  "} else if (pm.cookies.has(\"agendou_session\")) {",
+                  "  pm.collectionVariables.set(\"clientCookie\", \"agendou_session=\" + pm.cookies.get(\"agendou_session\"));",
+                  "}",
+                  "pm.test(\"Cookie de sessão HTTP-only foi gravado\", () => {",
+                  "  pm.expect(pm.collectionVariables.get(\"clientCookie\")).to.match(/^agendou_session=/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente não acessa o perfil do comércio (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "profile"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 RF06 Busca",
+      "description": "Descoberta de comércios.",
+      "item": [
+        {
+          "name": "Buscar pelo nome",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants?q={{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{runId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Encontra o comércio criado\", () => pm.expect(pm.response.json().data.merchants.map((m) => m.id)).to.include(pm.collectionVariables.get(\"merchantId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Proximidade sem GPS cai para avaliação",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants?order=proximity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants"
+              ],
+              "query": [
+                {
+                  "key": "order",
+                  "value": "proximity"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().data;",
+                  "pm.test(\"Ordenação de reserva\", () => { pm.expect(r.appliedOrder).to.eql(\"rating\"); pm.expect(r.usedFallbackOrder).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 RF05 Agendamento",
+      "description": "Reserva atômica sem reserva dupla (RN03).",
+      "item": [
+        {
+          "name": "Página pública do comércio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants/{{merchantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants",
+                "{{merchantId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Serviço ativo aparece\", () => pm.expect(pm.response.json().data.services.map((s) => s.id)).to.include(pm.collectionVariables.get(\"serviceId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Horários livres",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants/{{merchantId}}/slots?date={{bookingDate}}&serviceId={{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants",
+                "{{merchantId}}",
+                "slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{bookingDate}}"
+                },
+                {
+                  "key": "serviceId",
+                  "value": "{{serviceId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Data de agendamento: daqui a 2 dias (AAAA-MM-DD, fuso local)",
+                  "const d = new Date();",
+                  "d.setDate(d.getDate() + 2);",
+                  "const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, \"0\")}-${String(d.getDate()).padStart(2, \"0\")}`;",
+                  "pm.collectionVariables.set(\"bookingDate\", iso);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const slots = pm.response.json().data;",
+                  "pm.test(\"Há horários livres\", () => pm.expect(slots.length).to.be.above(0));",
+                  "pm.collectionVariables.set(\"timeSlot\", slots[0]);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agendar horário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchantId\": \"{{merchantId}}\",\n  \"serviceId\": \"{{serviceId}}\",\n  \"date\": \"{{bookingDate}}\",\n  \"timeSlot\": \"{{timeSlot}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Link do WhatsApp\", () => pm.expect(pm.response.json().data.whatsappUrl).to.include(\"wa.me\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesmo horário de novo retorna 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchantId\": \"{{merchantId}}\",\n  \"serviceId\": \"{{serviceId}}\",\n  \"date\": \"{{bookingDate}}\",\n  \"timeSlot\": \"{{timeSlot}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Sinaliza conflito\", () => pm.expect(pm.response.json().conflict).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Horário reservado sai da lista",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{clientCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants/{{merchantId}}/slots?date={{bookingDate}}&serviceId={{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants",
+                "{{merchantId}}",
+                "slots"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{bookingDate}}"
+                },
+                {
+                  "key": "serviceId",
+                  "value": "{{serviceId}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Horário não está mais livre\", () => pm.expect(pm.response.json().data).to.not.include(pm.collectionVariables.get(\"timeSlot\")));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 RF03 Exclusão lógica",
+      "description": "Serviço sai do catálogo sem apagar o histórico (RN06).",
+      "item": [
+        {
+          "name": "Login do comerciante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{merchantEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "// Guarda o cookie de sessão devolvido pela API",
+                  "const setCookies = pm.response.headers.all()",
+                  "  .filter((h) => h.key.toLowerCase() === \"set-cookie\")",
+                  "  .map((h) => h.value)",
+                  "  .join(\"; \");",
+                  "const achado = setCookies.match(/agendou_session=[^;]+/);",
+                  "if (achado) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", achado[0]);",
+                  "} else if (pm.cookies.has(\"agendou_session\")) {",
+                  "  pm.collectionVariables.set(\"merchantCookie\", \"agendou_session=\" + pm.cookies.get(\"agendou_session\"));",
+                  "}",
+                  "pm.test(\"Cookie de sessão HTTP-only foi gravado\", () => {",
+                  "  pm.expect(pm.collectionVariables.get(\"merchantCookie\")).to.match(/^agendou_session=/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remover serviço",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services",
+                "{{serviceId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Serviço removido some da página pública",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchants/{{merchantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchants",
+                "{{merchantId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Serviço não aparece\", () => pm.expect(pm.response.json().data.services.map((s) => s.id)).to.not.include(pm.collectionVariables.get(\"serviceId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remover de novo retorna 404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/merchant/services/{{serviceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "merchant",
+                "services",
+                "{{serviceId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{merchantCookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "cnpj",
+      "value": ""
+    },
+    {
+      "key": "merchantName",
+      "value": ""
+    },
+    {
+      "key": "merchantEmail",
+      "value": ""
+    },
+    {
+      "key": "clientEmail",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": "Senha1234"
+    },
+    {
+      "key": "merchantCookie",
+      "value": ""
+    },
+    {
+      "key": "clientCookie",
+      "value": ""
+    },
+    {
+      "key": "merchantId",
+      "value": ""
+    },
+    {
+      "key": "serviceId",
+      "value": ""
+    },
+    {
+      "key": "bookingDate",
+      "value": ""
+    },
+    {
+      "key": "timeSlot",
+      "value": ""
+    }
+  ]
+}
