@@ -35,13 +35,26 @@ fi
 echo "-> Iniciando banco de dados PostgreSQL local de testes..."
 bash "${ROOT_DIR}/scripts/test-db.sh" start
 
-# 4. Sincroniza o schema do Prisma no banco de testes
-echo "-> Sincronizando schema do Prisma (db push)..."
-npx prisma db push --skip-generate
+# 4. Aplica as migrações versionadas (db/migrations) no banco de testes
+echo "-> Aplicando migrações do Prisma (migrate deploy)..."
+if ! SAIDA_MIGRATE="$(npx prisma migrate deploy 2>&1)"; then
+  if echo "${SAIDA_MIGRATE}" | grep -q "P3005"; then
+    # Banco criado antes das migrações (com db push): as tabelas já seguem o
+    # esquema, então a migração inicial é só marcada como aplicada.
+    echo "-> Banco criado antes das migrações. Registrando a migração inicial como aplicada..."
+    npx prisma migrate resolve --applied 20261117120000_init
+    npx prisma migrate deploy
+  else
+    echo "${SAIDA_MIGRATE}"
+    exit 1
+  fi
+else
+  echo "${SAIDA_MIGRATE}"
+fi
 
 # 5. Popula o banco com dados de teste (cliente, comércios, serviços e horários)
 echo "-> Populando dados iniciais de teste (seed)..."
-node --env-file=.env "${ROOT_DIR}/prisma/seed.mjs"
+node --env-file=.env "${ROOT_DIR}/db/seed.mjs"
 
 echo ""
 echo "=================================================="

@@ -61,8 +61,8 @@ reset_db() {
   echo "-> Recriando database '${DB_NAME}' para testes limpos..."
   psql -h localhost -p "${PG_PORT}" -U "${PG_USER}" -c "DROP DATABASE IF EXISTS ${DB_NAME} WITH (FORCE);" >/dev/null
   psql -h localhost -p "${PG_PORT}" -U "${PG_USER}" -c "CREATE DATABASE ${DB_NAME};" >/dev/null
-  npx prisma db push
-  node --env-file=.env prisma/seed.mjs
+  npx prisma migrate deploy
+  node --env-file=.env db/seed.mjs
 }
 
 case "${ACTION}" in
