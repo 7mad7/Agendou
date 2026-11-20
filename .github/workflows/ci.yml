@@ -1,0 +1,100 @@
+# Integração contínua do Agendou (IC-CI-01)
+# Etapas: instalação → migrações → testes unitários e de integração →
+# build → testes de API (Newman) → testes E2E (Playwright).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-e-testes:
+    name: Build, testes e Newman
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agendou_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agendou_test?schema=public
+      AUTH_SECRET: agendou-ci-secret
+      COOKIE_SECURE: "false"
+      TZ: America/Sao_Paulo
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar o Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências (gera o Prisma Client)
+        run: npm ci
+
+      - name: Aplicar migrações (db/migrations)
+        run: npm run db:migrate
+
+      - name: Carregar dados de teste (seed)
+        run: npm run db:seed
+
+      - name: Testes unitários
+        run: npm run test:unit
+
+      - name: Testes de integração (banco real)
+        run: npm run test:integration
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Subir a aplicação
+        run: |
+          mkdir -p reports
+          npm run start > reports/app.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/health > /dev/null; then
+              echo "Aplicação no ar"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "A aplicação não respondeu em 2 minutos"
+          cat reports/app.log
+          exit 1
+
+      - name: Testes de API (Newman)
+        run: npm run test:api -- --reporters cli,junit --reporter-junit-export reports/newman-junit.xml
+
+      - name: Instalar o navegador do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Testes E2E (Playwright)
+        run: npm run test:e2e
+
+      - name: Guardar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-de-teste
+          path: |
+            reports/
+            playwright-report/
+          retention-days: 30
